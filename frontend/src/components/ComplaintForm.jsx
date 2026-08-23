@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { submitComplaint, submitReview } from "../api";
+import { submitComplaint } from "../api";
 import { showNotification } from "./NotificationCenter";
 import "../styles/ComplaintForm.css";
 
@@ -13,10 +13,8 @@ export default function ComplaintForm({ onResult, user }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [steps, setSteps] = useState([]);
-  const [showReview, setShowReview] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
   const [ticketId, setTicketId] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const presets = [
     {
@@ -79,7 +77,7 @@ export default function ComplaintForm({ onResult, user }) {
 
     setLoading(true);
     setError("");
-    setShowReview(false);
+    setCopied(false);
 
     setSteps([
       { name: "Input Validation — checking complaint sufficiency...", status: "active" },
@@ -112,7 +110,6 @@ export default function ComplaintForm({ onResult, user }) {
 
       setTicketId(res.ticket_id);
       if (typeof onResult === "function") onResult(res);
-      setShowReview(true);
 
       showNotification("success", "Complaint Ingested", `Ticket #${res.ticket_id} logged into TelecomIQ engine.`);
 
@@ -129,21 +126,12 @@ export default function ComplaintForm({ onResult, user }) {
     }
   };
 
-  const handleReview = async () => {
-    if (rating === 0) {
-      showNotification("error", "Rating Required", "Please select a star rating");
-      return;
-    }
-    try {
-      await submitReview(ticketId, rating, feedback);
-      showNotification("success", "Feedback Recorded", "Thank you for evaluating TelecomIQ recommendations!");
-      setShowReview(false);
-      setRating(0);
-      setFeedback("");
-    } catch (e) {
-      console.error(e);
-      showNotification("error", "Error", "Failed to submit rating.");
-    }
+  const handleCopyTicket = () => {
+    if (!ticketId) return;
+    navigator.clipboard.writeText(ticketId);
+    setCopied(true);
+    showNotification("info", "Copied", `Ticket #${ticketId} copied to clipboard.`);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
@@ -176,47 +164,77 @@ export default function ComplaintForm({ onResult, user }) {
 
       {/* Quick Telecom Preset Chips */}
       <div style={{ marginBottom: "1.2rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
-        <span style={{ fontSize: "0.85rem", opacity: 0.8, fontWeight: 600 }}>Quick Presets:</span>
+        <span style={{ fontSize: "0.85rem", opacity: 0.8, fontWeight: 600, color: "#0F172A" }}>Quick Presets:</span>
         {presets.map((p, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => applyPreset(p)}
-            style={{
-              padding: "0.35rem 0.75rem",
-              fontSize: "0.8rem",
-              borderRadius: "20px",
-              background: "rgba(59, 130, 246, 0.1)",
-              border: "1px solid rgba(59, 130, 246, 0.25)",
-              color: "inherit",
-              cursor: "pointer"
-            }}
+            className="preset-pill-btn"
           >
             {p.title}
           </button>
         ))}
       </div>
 
+      {error && <div className="form-error-banner">{error}</div>}
+
       <form className="complaint-form" onSubmit={handleSubmit}>
         <div className="form-section-wrapper">
           <div className="form-group">
             <label>Subscriber Name *</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-input" disabled={loading} required />
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="e.g. John Doe"
+              disabled={loading}
+              required
+            />
           </div>
           <div className="form-group">
             <label>Subscriber Email *</label>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" disabled={loading} required />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="e.g. subscriber@telecomiq.com"
+              disabled={loading}
+              required
+            />
           </div>
         </div>
 
         <div className="form-group">
           <label>Complaint Subject *</label>
-          <input type="text" name="subject" value={formData.subject} onChange={handleChange} className="form-input" placeholder="e.g. Fiber broadband disconnect every 30 mins" disabled={loading} required />
+          <input
+            type="text"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            className="form-input"
+            placeholder="e.g. Fiber broadband disconnect every 30 mins"
+            disabled={loading}
+            required
+          />
         </div>
 
         <div className="form-group">
           <label>Detailed Incident Description *</label>
-          <textarea name="description" value={formData.description} onChange={handleChange} className="form-textarea" placeholder="Describe network symptoms, locations, router light statuses, or billing amounts..." rows="5" disabled={loading} required />
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="form-textarea"
+            placeholder="Describe network symptoms, locations, router light statuses, or billing amounts..."
+            rows="5"
+            disabled={loading}
+            required
+          />
         </div>
 
         <button type="submit" className="launch-btn btn-submit-complaint" disabled={loading}>
@@ -234,22 +252,39 @@ export default function ComplaintForm({ onResult, user }) {
         </button>
       </form>
 
-      {showReview && (
-        <div className="review-block">
-          <h3>Rate TelecomIQ AI Resolution</h3>
-          <p>Rate the recommendation accuracy for ticket <strong>#{ticketId}</strong></p>
-          <div className="star-rating">
-            {[1, 2, 3, 4, 5].map(s => (
-              <button key={s} className={`star-btn ${rating >= s ? 'active' : ''}`} onClick={() => setRating(s)}>★</button>
-            ))}
+      {/* Ticket Generated Success Card with Copy Button */}
+      {ticketId && (
+        <div className="ticket-success-banner">
+          <div className="ticket-success-left">
+            <div className="ticket-success-badge-icon">✓</div>
+            <div className="ticket-success-info">
+              <span className="ticket-success-label">Your ticket no. is generated:</span>
+              <span className="ticket-success-code">#{ticketId}</span>
+            </div>
           </div>
-          <textarea
-            placeholder="Optional comments regarding AI resolution accuracy..."
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            className="review-textarea"
-          />
-          <button onClick={handleReview} className="submit-review-btn">Submit Rating</button>
+          <button
+            type="button"
+            className="ticket-copy-action-btn"
+            onClick={handleCopyTicket}
+            title="Copy Ticket ID"
+          >
+            {copied ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Copied</span>
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Ticket ID</span>
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>
