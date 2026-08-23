@@ -1,36 +1,36 @@
 /* ==========================================================================
    TelecomIQ — Complaint Form Stylesheet
-   Minimalist & Clean SaaS Form (Inspired by Kukie.io)
+   Minimalist & Clean Pure-White SaaS Form
    ========================================================================== */
 
 .complaint-form-container {
-  background: var(--bg-surface);
+  background: #FFFFFF !important;
   padding: 36px 40px;
   border-radius: 16px;
   max-width: 820px;
   width: 100%;
   margin: 20px auto;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  border: 1px solid #E2E8F0;
   position: relative;
 }
 
 .form-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .form-header h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-display, 'Inter', sans-serif);
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--text-title);
+  color: #0F172A;
   letter-spacing: -0.025em;
   margin-bottom: 8px;
 }
 
 .form-header p {
-  color: var(--text-muted);
+  color: #475569;
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -51,6 +51,9 @@
 }
 
 @media (max-width: 640px) {
+  .complaint-form-container {
+    padding: 24px 18px;
+  }
   .form-section-wrapper {
     grid-template-columns: 1fr;
   }
@@ -63,22 +66,23 @@
 }
 
 .form-group label {
-  font-family: var(--font-display);
-  font-size: 0.825rem;
-  font-weight: 600;
-  color: var(--text-title);
+  font-family: var(--font-display, 'Inter', sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0F172A;
 }
 
 .form-input,
 .form-select,
 .form-textarea {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1.5px solid #CBD5E1 !important;
   border-radius: 10px;
-  padding: 11px 14px;
-  color: var(--text-title);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
+  padding: 12px 16px;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
   transition: all 0.2s ease;
   outline: none;
 }
@@ -86,22 +90,28 @@
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
-  border-color: var(--color-primary-600);
-  box-shadow: 0 0 0 3px rgba(27, 77, 255, 0.12);
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #1B4DFF !important;
+  box-shadow: 0 0 0 3.5px rgba(27, 77, 255, 0.15) !important;
 }
 
 .form-input::placeholder,
 .form-textarea::placeholder {
-  color: var(--text-subtle);
+  color: #94A3B8;
+  font-weight: 400;
 }
 
-.form-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 36px;
+/* Fix browser autofill dark grey background bug */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-textarea:-webkit-autofill,
+.form-textarea:-webkit-autofill:hover,
+.form-textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #0F172A !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .form-textarea {
@@ -110,32 +120,26 @@
 }
 
 /* Quick Fill Chip Buttons */
-.quick-fill-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.quick-tag-btn {
-  padding: 5px 11px;
-  font-size: 0.775rem;
+.preset-pill-btn {
+  padding: 6px 14px;
+  font-size: 0.825rem;
   font-weight: 600;
-  color: var(--text-muted);
-  background: var(--slate-100);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: 20px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #1E293B;
+  cursor: pointer;
   transition: all 0.18s ease;
 }
 
-.quick-tag-btn:hover {
-  color: var(--color-primary-600);
-  border-color: var(--color-primary-200);
-  background: var(--color-primary-50);
+.preset-pill-btn:hover {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+  color: #1B4DFF;
+  transform: translateY(-1px);
 }
 
 /* Submit Action Button */
-.submit-btn,
 .btn-submit-complaint,
 .launch-btn {
   width: 100%;
@@ -144,54 +148,128 @@
   font-size: 1rem;
   font-weight: 700;
   color: #ffffff !important;
-  background: var(--color-primary-600, #1B4DFF) !important;
-  border: 1px solid var(--color-primary-600, #1B4DFF) !important;
+  background: #1B4DFF !important;
+  border: 1px solid #1B4DFF !important;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(27, 77, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(27, 77, 255, 0.3);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 12px;
   cursor: pointer;
 }
 
-.submit-btn:hover:not(:disabled),
 .btn-submit-complaint:hover:not(:disabled),
 .launch-btn:hover:not(:disabled) {
-  background: var(--color-primary-700, #153ECC) !important;
-  border-color: var(--color-primary-700, #153ECC) !important;
-  box-shadow: 0 6px 16px rgba(27, 77, 255, 0.35);
+  background: #153ECC !important;
+  border-color: #153ECC !important;
+  box-shadow: 0 6px 18px rgba(27, 77, 255, 0.4);
 }
 
-.submit-btn:disabled,
 .btn-submit-complaint:disabled,
 .launch-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
 
-/* Status & Alert Messages */
-.form-alert-box {
+/* Error Banner */
+.form-error-banner {
   padding: 12px 16px;
   border-radius: 10px;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
   font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Ticket Generated Confirmation Banner with Copy Button
+   ══════════════════════════════════════════════════════════════════════════ */
+.ticket-success-banner {
+  margin-top: 24px;
+  background: #F0FDF4;
+  border: 1.5px solid #86EFAC;
+  border-radius: 14px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 16px;
+  animation: slideUpBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);
 }
 
-.form-alert-box.error {
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  color: var(--error);
+@keyframes slideUpBanner {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.form-alert-box.success {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  color: var(--success);
+.ticket-success-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticket-success-badge-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #22C55E;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ticket-success-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-success-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #166534;
+}
+
+.ticket-success-code {
+  font-family: var(--font-display, 'Inter', monospace);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #14532D;
+  letter-spacing: -0.01em;
+}
+
+.ticket-copy-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #86EFAC;
+  color: #15803D;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.ticket-copy-action-btn:hover {
+  background: #DCFCE7;
+  border-color: #4ADE80;
+  color: #14532D;
+  transform: translateY(-1px);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -218,7 +296,7 @@
 
 .processing-card {
   background: #FFFFFF;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   max-width: 520px;
   width: 100%;
@@ -243,8 +321,8 @@
   font-size: 0.725rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: var(--color-primary-600);
-  background: var(--color-primary-50);
+  color: #1B4DFF;
+  background: #EEF2FF;
   border: 1px solid rgba(27, 77, 255, 0.2);
   padding: 4px 10px;
   border-radius: 9999px;
@@ -254,10 +332,10 @@
 }
 
 .processing-card h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-display, 'Inter', sans-serif);
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--text-title);
+  color: #0F172A;
   margin-bottom: 20px;
   letter-spacing: -0.02em;
 }
@@ -274,19 +352,19 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: var(--slate-50);
+  background: #F8FAFC;
   border: 1px solid transparent;
   transition: all 0.25s ease;
 }
 
 .step-row.active {
-  background: var(--color-primary-50);
+  background: #EEF2FF;
   border-color: rgba(27, 77, 255, 0.25);
 }
 
 .step-row.done {
   background: #FFFFFF;
-  border-color: var(--border-subtle);
+  border-color: #E2E8F0;
 }
 
 .step-indicator {
@@ -302,12 +380,12 @@
 }
 
 .step-row.waiting .step-indicator {
-  color: var(--slate-400);
-  border: 1.5px dashed var(--slate-300);
+  color: #94A3B8;
+  border: 1.5px dashed #CBD5E1;
 }
 
 .step-row.active .step-indicator {
-  color: var(--color-primary-600);
+  color: #1B4DFF;
 }
 
 .step-row.done .step-indicator {
@@ -319,28 +397,28 @@
 .step-text {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-body);
+  color: #1E293B;
 }
 
 .step-row.waiting .step-text {
-  color: var(--text-muted);
+  color: #64748B;
   font-weight: 500;
 }
 
 .step-row.active .step-text {
-  color: var(--color-primary-600);
+  color: #1B4DFF;
   font-weight: 700;
 }
 
 .step-row.done .step-text {
-  color: var(--text-title);
+  color: #0F172A;
 }
 
 .spinner-small {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(27, 77, 255, 0.2);
-  border-top-color: var(--color-primary-600);
+  border-top-color: #1B4DFF;
   border-radius: 50%;
   animation: spinStep 0.7s linear infinite;
 }
@@ -367,7 +445,7 @@
 
 .analysis-popup-modal {
   background: #FFFFFF;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   max-width: 860px;
   width: 100%;
@@ -383,7 +461,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 28px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid #E2E8F0;
   background: #FFFFFF;
   flex-shrink: 0;
 }
@@ -398,15 +476,15 @@
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: var(--color-primary-600);
+  color: #1B4DFF;
   text-transform: uppercase;
 }
 
 .popup-title {
-  font-family: var(--font-display);
+  font-family: var(--font-display, 'Inter', sans-serif);
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--text-title);
+  color: #0F172A;
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -415,9 +493,9 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: var(--slate-100);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -426,9 +504,9 @@
 }
 
 .popup-close-btn:hover {
-  background: var(--color-primary-50);
+  background: #EEF2FF;
   border-color: rgba(27, 77, 255, 0.25);
-  color: var(--color-primary-600);
+  color: #1B4DFF;
 }
 
 .analysis-popup-body {
@@ -440,8 +518,8 @@
 
 .analysis-popup-footer {
   padding: 16px 28px;
-  border-top: 1px solid var(--border-subtle);
-  background: var(--slate-50);
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
