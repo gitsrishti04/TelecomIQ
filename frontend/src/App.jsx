@@ -7,7 +7,6 @@ import Feedback from "./components/Feedback";
 import NotificationCenter from "./components/NotificationCenter";
 import AdminDashboard from "./components/AdminDashboard";
 import AgentModule from "./components/Agent/AgentModule";
-import AgentResolutions from "./components/Agent/AgentResolutions";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 import "./styles/Profile.css";
@@ -65,15 +64,6 @@ export default function App() {
       );
     }
 
-    if (page === "agent-resolutions") {
-      return (
-        <AgentResolutions
-          user={user}
-          onNavigate={navigateTo}
-        />
-      );
-    }
-
     // Default: "form" (File Complaint page)
     return (
       <div className="landing-page-clean">
@@ -96,7 +86,6 @@ export default function App() {
             <nav className="nav-links">
               <button onClick={() => navigateTo("landing")}>Home</button>
               <button onClick={() => navigateTo("agent-queue")}>Agent Queue</button>
-              <button onClick={() => navigateTo("agent-resolutions")}>Resolution Log</button>
               <button onClick={() => navigateTo("admin")}>Admin Dashboard</button>
             </nav>
           </div>

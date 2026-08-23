@@ -259,13 +259,6 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
                         >
                             Agent Queue
                         </button>
-                        <button
-                            className="btn-secondary"
-                            onClick={() => onNavigate("agent-resolutions")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            Resolution Log
-                        </button>
                     </div>
                     </div>
                 </div>

@@ -169,7 +169,7 @@ export default function AgentModule({ user, onNavigate }) {
                     <nav className="nav-links">
                         <button onClick={() => onNavigate("landing")}>Home</button>
                         <button className="active" onClick={() => onNavigate("agent-queue")}>Agent Queue</button>
-                        <button onClick={() => onNavigate("agent-resolutions")}>Resolution Log</button>
+                        <button onClick={() => onNavigate("admin")}>Admin Dashboard</button>
                     </nav>
                 </div>
 
@@ -191,26 +191,42 @@ export default function AgentModule({ user, onNavigate }) {
                 >
                     Agent Resolution Module
                 </motion.h1>
-                <p className="agent-subtitle">Deep analysis & multi-model AI validation pipeline</p>
+                <p className="agent-subtitle">Deep incident analysis & multi-model AI validation triage</p>
             </div>
 
             <div className="agent-content">
                 <div className="agent-stats">
-                    <motion.div className="stat-glow-card" whileHover={{ y: -5 }}>
-                        <span className="stat-label">Queue Size</span>
+                    <motion.div className="stat-glow-card stat-card-total" whileHover={{ y: -3 }}>
+                        <div className="stat-card-header">
+                            <span className="stat-label">Queue Size</span>
+                            <span className="stat-icon-badge">📋</span>
+                        </div>
                         <span className="stat-value">{stats.total}</span>
+                        <span className="stat-footer-text">Total Ingested Tickets</span>
                     </motion.div>
-                    <motion.div className="stat-glow-card" whileHover={{ y: -5 }}>
-                        <span className="stat-label">Pending Review</span>
+                    <motion.div className="stat-glow-card stat-card-pending" whileHover={{ y: -3 }}>
+                        <div className="stat-card-header">
+                            <span className="stat-label">Pending Review</span>
+                            <span className="stat-icon-badge">⏳</span>
+                        </div>
                         <span className="stat-value">{stats.pending}</span>
+                        <span className="stat-footer-text">Awaiting Agent Action</span>
                     </motion.div>
-                    <motion.div className="stat-glow-card" whileHover={{ y: -5 }}>
-                        <span className="stat-label">Critical Issues</span>
-                        <span className="stat-value" style={{ color: 'var(--agent-error)' }}>{stats.critical}</span>
+                    <motion.div className="stat-glow-card stat-card-critical" whileHover={{ y: -3 }}>
+                        <div className="stat-card-header">
+                            <span className="stat-label">Critical Issues</span>
+                            <span className="stat-icon-badge">🔥</span>
+                        </div>
+                        <span className="stat-value">{stats.critical}</span>
+                        <span className="stat-footer-text">P1 & P2 High Priority</span>
                     </motion.div>
-                    <motion.div className="stat-glow-card" whileHover={{ y: -5 }}>
-                        <span className="stat-label">Escalated Tickets</span>
-                        <span className="stat-value" style={{ color: 'var(--agent-warning)' }}>{stats.escalated}</span>
+                    <motion.div className="stat-glow-card stat-card-escalated" whileHover={{ y: -3 }}>
+                        <div className="stat-card-header">
+                            <span className="stat-label">Escalated Tickets</span>
+                            <span className="stat-icon-badge">⚠️</span>
+                        </div>
+                        <span className="stat-value">{stats.escalated}</span>
+                        <span className="stat-footer-text">High Escalation Risk (≥60%)</span>
                     </motion.div>
                 </div>
 
