@@ -6,10 +6,10 @@ Official scope (per company use case):
   2.  Customer sentiment analysis            → sentiment_analyzer.py
   3.  Complaint prioritization               → priority.py
   4.  Escalation risk prediction             → priority.py
-  5.  Resolution recommendation              → GenAI (Groq → Gemini → SOP)
+  5.  Resolution recommendation              → GenAI (Groq → SOP)
   6.  Automatic ticket summary generation    → GenAI
   7.  BERT / DistilBERT component            → local_transformer.py (offline)
-  8.  GenAI triage assistant                 → gemini_client.py / groq_client.py
+  8.  GenAI triage assistant                 → groq_client.py
   9.  Vector DB / RAG                        → rag_engine.py + complaint_matcher.py
   10. Agentic orchestration                  → LangGraph StateGraph  ← THIS FILE
 
@@ -47,7 +47,7 @@ from app.agents.sentiment_analyzer import analyze_sentiment
 from app.agents.priority import detect_priority
 from app.agents.complaint_matcher import find_similar_complaints
 from app.services.rag_engine import rag_engine
-from app.agents.gemini_client import async_ask_ai
+from app.agents.groq_client import async_ask_ai
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -180,7 +180,7 @@ async def node_rag(state: ComplaintState) -> ComplaintState:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Node 7 — GenAI Triage Assistant  (Groq → Gemini → SOP template fallback)
+# Node 7 — GenAI Triage Assistant  (Groq → SOP template fallback)
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def node_genai_triage(state: ComplaintState) -> ComplaintState:
@@ -252,7 +252,7 @@ Return EXACTLY this JSON (no extra keys, no markdown):
 
 def route_after_validation(state: ComplaintState) -> str:
     """Route to classification if input is sufficient, otherwise end early."""
-    return "classify" if state.get("is_sufficient", False) else END
+    return "node_classify" if state.get("is_sufficient", False) else END
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -262,35 +262,35 @@ def route_after_validation(state: ComplaintState) -> str:
 def _build_graph() -> Any:
     graph = StateGraph(ComplaintState)
 
-    # Register nodes
-    graph.add_node("validate",       node_validate_input)
-    graph.add_node("classify",       node_classify)
-    graph.add_node("sentiment",      node_sentiment)
-    graph.add_node("priority",       node_priority)
-    graph.add_node("vector_search",  node_vector_search)
-    graph.add_node("rag",            node_rag)
-    graph.add_node("genai_triage",   node_genai_triage)
+    # Register nodes (prefixed with node_ to prevent state key name collisions)
+    graph.add_node("node_validate",      node_validate_input)
+    graph.add_node("node_classify",      node_classify)
+    graph.add_node("node_sentiment",     node_sentiment)
+    graph.add_node("node_priority",      node_priority)
+    graph.add_node("node_vector_search", node_vector_search)
+    graph.add_node("node_rag",           node_rag)
+    graph.add_node("node_genai_triage",  node_genai_triage)
 
     # Entry point
-    graph.set_entry_point("validate")
+    graph.set_entry_point("node_validate")
 
     # Conditional branch after validation
     graph.add_conditional_edges(
-        "validate",
+        "node_validate",
         route_after_validation,
         {
-            "classify": "classify",
-            END:        END,
+            "node_classify": "node_classify",
+            END:             END,
         },
     )
 
     # Linear chain for the happy path
-    graph.add_edge("classify",      "sentiment")
-    graph.add_edge("sentiment",     "priority")
-    graph.add_edge("priority",      "vector_search")
-    graph.add_edge("vector_search", "rag")
-    graph.add_edge("rag",           "genai_triage")
-    graph.add_edge("genai_triage",  END)
+    graph.add_edge("node_classify",      "node_sentiment")
+    graph.add_edge("node_sentiment",     "node_priority")
+    graph.add_edge("node_priority",      "node_vector_search")
+    graph.add_edge("node_vector_search", "node_rag")
+    graph.add_edge("node_rag",           "node_genai_triage")
+    graph.add_edge("node_genai_triage",  END)
 
     return graph.compile()
 

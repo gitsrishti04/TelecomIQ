@@ -20,26 +20,23 @@ from app.agents.complaint_matcher import get_vector_store
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """FastAPI Lifespan Context: Pre-warm models & DB seeding at startup"""
+    """FastAPI Lifespan Context: Initialize DB & pre-warm models on startup"""
     print("🚀 TelecomIQ Engine Starting Up...")
     try:
+        # Create database tables & run migrations
+        models.Base.metadata.create_all(bind=engine)
+        run_migrations()
+        ensure_db_seeded()
+        print("✅ Database tables, migrations & dataset ready.")
+
         # Pre-warm ML Classifier Model & TF-IDF Vector Store in memory
         get_classifier_model()
         get_vector_store()
         print("⚡ ML Classifier & Vector Store pre-warmed in memory.")
     except Exception as e:
-        print(f"⚠️ Model pre-warming warning: {e}")
+        print(f"⚠️ Startup initialization warning: {e}")
     yield
     print("🛑 TelecomIQ Engine Shutdown Complete.")
-
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
-
-# Run custom migrations (add missing columns)
-run_migrations()
-
-# Ensure database is seeded with Kaggle complaints on startup if empty
-ensure_db_seeded()
 
 app = FastAPI(
     title="TelecomIQ Engine - Telecom Complaint Intelligence & Resolution Assistant",
@@ -55,10 +52,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
     )
 
-IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production" or bool(os.getenv("RENDER"))
+IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production" or bool(os.getenv("VERCEL"))
 
 # Origins allowed
 ALLOWED_ORIGINS = [
+    "https://telecom-iq.vercel.app",
+    "https://telecomiq.vercel.app",
+    "https://telecom-iq-pi.vercel.app",
     "https://riteshkr.online",
     "http://riteshkr.online",
     "https://www.riteshkr.online",
@@ -78,7 +78,7 @@ for origin in extra_origins.split(","):
 
 ALLOWED_ORIGINS = list(dict.fromkeys(o for o in ALLOWED_ORIGINS if o != "*"))
 
-# Allow all HTTPS origins via regex to support Render, Vercel, Railway, and Netlify deployments
+# Allow all HTTPS origins via regex to support Vercel, custom domain, and preview deployments
 ALLOWED_ORIGIN_REGEX = r"https://.*"
 
 app.add_middleware(
@@ -116,9 +116,10 @@ def root():
 
 @app.get("/health")
 def health():
-    """Ultra-fast, zero-overhead production health check endpoint for Render/uptime monitoring"""
+    """Ultra-fast, zero-overhead production health check endpoint"""
     return {
         "status": "ok",
         "service": "TelecomIQ Production Engine",
-        "environment": "render" if os.getenv("RENDER") else "local"
+        "environment": "production" if os.getenv("VERCEL") or os.getenv("ENVIRONMENT") == "production" else "local"
     }
+

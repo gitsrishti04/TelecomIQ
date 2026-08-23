@@ -7,74 +7,57 @@ export default function SideChatBot({ open, onClose }) {
     {
       role: "agent",
       text:
-        "Hi 👋 I'm the AI Support Agent. I can help you understand this website or take your complaint.",
+        "Hi, I'm the TelecomIQ Assistant. Describe your telecom issue and I'll help classify it, or type a ticket ID to look up your complaint status.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false); // New state for maximize
+  const [isMaximized, setIsMaximized] = useState(false);
   const recognitionRef = useRef(null);
   const chatBodyRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Helper function to format markdown text to HTML
   const formatMessageText = (text) => {
     if (!text) return "";
 
     let formatted = text;
-
-    // Convert **bold** to <strong>
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-    // Convert *italic* to <em>
     formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    // Convert `code` to <code>
     formatted = formatted.replace(/`(.+?)`/g, '<code>$1</code>');
-
-    // Convert line breaks to <br>
     formatted = formatted.replace(/\n/g, '<br>');
-
-    // Convert numbered lists (1. item)
     formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<div class="list-item">$1. $2</div>');
-
-    // Convert bullet points (- item or * item)
     formatted = formatted.replace(/^[-*]\s+(.+)$/gm, '<div class="list-item">• $1</div>');
 
     return formatted;
   };
 
-  const inputRef = useRef(null);
-
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
     }
   }, [messages, loading]);
 
-  // Auto-focus input when chat opens
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current.focus(), 300);
     }
   }, [open]);
 
-  // Handle hover focus
   const handleInputHover = () => {
     if (inputRef.current && !isListening) {
       inputRef.current.focus();
     }
   };
 
-  // Initialize Speech Recognition
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false; // Capture one shot
-      recognitionRef.current.interimResults = true; // Show results as they come
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onresult = (event) => {
@@ -85,10 +68,8 @@ export default function SideChatBot({ open, onClose }) {
 
         setInput(transcript);
 
-        // If it's a final result, wait a bit and send
         if (event.results[0].isFinal) {
           setIsListening(false);
-          // Small delay before auto-sending for better UX
           setTimeout(() => {
             if (transcript.trim()) {
               sendMessage(null, transcript.trim());
@@ -100,7 +81,6 @@ export default function SideChatBot({ open, onClose }) {
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
-        // Provide user feedback on error
         if (event.error === 'not-allowed') {
           alert("Microphone access denied. Please enable it in your browser settings.");
         }
@@ -126,7 +106,6 @@ export default function SideChatBot({ open, onClose }) {
         setIsListening(true);
       } catch (err) {
         console.error("Failed to start speech recognition:", err);
-        // Handle case where recognition handles start differently
         recognitionRef.current.stop();
         setTimeout(() => recognitionRef.current.start(), 100);
       }
@@ -170,19 +149,28 @@ export default function SideChatBot({ open, onClose }) {
   return (
     <div className={`side-chat ${open ? "open" : ""} ${isMaximized ? "maximized" : ""}`}>
       <div className="chat-header">
-        <span>🤖 AI Agent</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            <rect x="9" y="9" width="6" height="6"></rect>
+            <line x1="9" y1="1" x2="9" y2="4"></line>
+            <line x1="15" y1="1" x2="15" y2="4"></line>
+            <line x1="9" y1="20" x2="9" y2="23"></line>
+            <line x1="15" y1="20" x2="15" y2="23"></line>
+          </svg>
+          <span>TelecomIQ Assistant</span>
+        </div>
         <div className="chat-header-buttons">
           <button
             className="chat-maximize-btn"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent event bubbling
+              e.stopPropagation();
               setIsMaximized(!isMaximized);
             }}
             aria-label={isMaximized ? "Minimize Chat" : "Maximize Chat"}
             title={isMaximized ? "Minimize" : "Maximize"}
           >
             {isMaximized ? (
-              // Minimize icon
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="4 14 10 14 10 20"></polyline>
                 <polyline points="20 10 14 10 14 4"></polyline>
@@ -190,7 +178,6 @@ export default function SideChatBot({ open, onClose }) {
                 <line x1="3" y1="21" x2="10" y2="14"></line>
               </svg>
             ) : (
-              // Maximize icon
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <polyline points="9 21 3 21 3 15"></polyline>
@@ -215,8 +202,8 @@ export default function SideChatBot({ open, onClose }) {
 
             {m.meta && m.meta.type === "complaint" && (
               <div className="chat-meta">
-                <span>📂 {m.meta.category}</span>
-                <span>⚠ {m.meta.priority}</span>
+                <span>Category: {m.meta.category}</span>
+                <span>Priority: {m.meta.priority}</span>
               </div>
             )}
           </div>
@@ -246,13 +233,24 @@ export default function SideChatBot({ open, onClose }) {
             type="button"
             className={`voice-btn ${isListening ? 'active' : ''}`}
             onClick={toggleVoiceInput}
-            title={isListening ? "Stop Listening" : "Voice Search"}
+            title={isListening ? "Stop Listening" : "Voice Input"}
           >
-            {isListening ? "🛑" : "🎤"}
+            {isListening ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            )}
           </button>
         )}
         <button type="submit" disabled={loading || !input.trim() || isListening}>
-          {loading ? "…" : "Send"}
+          {loading ? "..." : "Send"}
         </button>
       </form>
     </div>

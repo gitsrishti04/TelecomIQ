@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -9,7 +9,7 @@ load_dotenv()
 
 def get_ist_time():
     """Helper to get current time in IST (UTC+5:30)"""
-    return datetime.utcnow() + timedelta(hours=5, minutes=30)
+    return datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
 
 
 # ✅ Read the database URL from environment.
@@ -18,16 +18,19 @@ def get_ist_time():
 DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("TURSO_DATABASE_URL") or ""
 
 # A local SQLite file is fine for development, but on a host with an ephemeral
-# filesystem (Render, Docker without a volume) it is silently wiped on every
-# restart, so every complaint written to it is lost. Refuse to start that way
-# instead of pretending the writes succeeded.
-IS_HOSTED = bool(os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production")
+# filesystem (Docker / serverless without a persistent volume) writes in the root directory
+# are read-only or wiped on restart.
+IS_HOSTED = bool(os.getenv("VERCEL") or os.getenv("ENVIRONMENT") == "production")
 TURSO_AUTH_TOKEN = None
 if not DATABASE_URL:
-    DATABASE_URL = "sqlite:///complaints.db"
-    print("[db] NOTICE: No DATABASE_URL set. Defaulting to local SQLite database 'complaints.db'.")
+    # On Vercel / serverless platforms, current directory is read-only. Use /tmp
+    if os.getenv("VERCEL") or not os.access(".", os.W_OK):
+        DATABASE_URL = "sqlite:////tmp/complaints.db"
+    else:
+        DATABASE_URL = "sqlite:///complaints.db"
+    print(f"[db] NOTICE: Defaulting to SQLite database '{DATABASE_URL}'.")
 
-# ✅ Handle Render/Postgres URL conversion
+# ✅ Handle Postgres URL conversion
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -74,7 +77,10 @@ elif DATABASE_URL.startswith("libsql://"):
                 "DATABASE_URL points at Turso but sqlalchemy-libsql is not installed. "
                 "Install it (>=0.2.0) so writes reach Turso instead of a disposable file."
             )
-        DATABASE_URL = "sqlite:///complaints.db"
+        if os.getenv("VERCEL") or not os.access(".", os.W_OK):
+            DATABASE_URL = "sqlite:////tmp/complaints.db"
+        else:
+            DATABASE_URL = "sqlite:///complaints.db"
         TURSO_AUTH_TOKEN = None
         print(
             "[db] WARNING: sqlalchemy-libsql is unavailable (no Windows wheel). "

@@ -31,40 +31,37 @@ export default function AgentResolutions({ user, onNavigate }) {
 
     return (
         <div className="agent-module">
-            {/* Professional Navigation Header */}
-            <header className="agent-header">
-                <div className="header-content" style={{
-                    maxWidth: '1400px',
-                    margin: '0 auto',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '1rem 2rem'
-                }}>
-                    <div className="logo" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'inherit' }} onClick={() => onNavigate("landing")}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--agent-primary)" strokeWidth="3">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                        </svg>
-                        <span style={{ fontWeight: 800 }}>TelecomIQ Support Agent</span>
+            {/* Unified Clean Header */}
+            <header className="landing-header-clean">
+                <div className="header-left">
+                    <div className="brand-logo" onClick={() => onNavigate("landing")}>
+                        <div className="brand-logo-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                                <polyline points="2 17 12 22 22 17" />
+                                <polyline points="2 12 12 17 22 12" />
+                            </svg>
+                        </div>
+                        <div className="logo-text-stack">
+                            <span className="logo-main-text">TelecomIQ</span>
+                            <span className="logo-sub-text">Support Agent</span>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <ThemeToggle className="navbar-theme-toggle" />
-                        <button className="nav-btn" onClick={() => onNavigate("landing")}>
-                            🏠 Landing
-                        </button>
-                        <button className="nav-btn" onClick={() => onNavigate("form")}>
-                            ⚡ File Complaint
-                        </button>
-                        <button className="nav-btn" onClick={() => onNavigate("admin")}>
-                            📊 Dashboard
-                        </button>
-                        <button className="nav-btn" onClick={() => onNavigate("agent-queue")}>
-                            📥 Agent Queue
-                        </button>
-                        <button className="nav-btn active" onClick={() => onNavigate("agent-resolutions")}>
-                            📜 Resolution Log
-                        </button>
-                    </div>
+
+                    <nav className="nav-links">
+                        <button onClick={() => onNavigate("landing")}>Home</button>
+                        <button onClick={() => onNavigate("agent-queue")}>Agent Queue</button>
+                        <button className="active" onClick={() => onNavigate("agent-resolutions")}>Resolution Log</button>
+                    </nav>
+                </div>
+
+                <div className="header-right">
+                    <button className="btn-nav-ghost" onClick={() => onNavigate("admin")}>
+                        Dashboard
+                    </button>
+                    <button className="btn-nav-primary" onClick={() => onNavigate("form")}>
+                        File Complaint
+                    </button>
                 </div>
             </header>
 
@@ -82,7 +79,10 @@ export default function AgentResolutions({ user, onNavigate }) {
             <div className="agent-content">
                 <div className="agent-controls">
                     <div className="search-wrapper">
-                        <i>🔍</i>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
                         <input
                             type="text"
                             placeholder="Search by Agent Name, User Email, or Content..."

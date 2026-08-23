@@ -191,12 +191,12 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
     );
 
     // Stats
-    const TELECOM_CATS = ["Network Connectivity","Broadband Performance","Call Drops","Service Outage","Billing Dispute","Data / Usage Issue","Installation","Equipment / Router","Service Request","Cancellation","Customer Service"];
+    const TELECOM_CATS = ["Network Connectivity", "Broadband Performance", "Call Drops", "Service Outage", "Billing Dispute", "Data / Usage Issue", "Installation", "Equipment / Router", "Service Request", "Cancellation", "Customer Service"];
     const stats = {
         total: complaints.length,
         resolved: complaints.filter(c => c.is_resolved).length,
         pending: complaints.filter(c => !c.is_resolved).length,
-        high: complaints.filter(c => { const p=(c.priority||"").toUpperCase(); return p==="HIGH"||p==="CRITICAL"||p.includes("P1")||p.includes("P2"); }).length,
+        high: complaints.filter(c => { const p = (c.priority || "").toUpperCase(); return p === "HIGH" || p === "CRITICAL" || p.includes("P1") || p.includes("P2"); }).length,
         categories: Object.fromEntries(TELECOM_CATS.map(k => [k, complaints.filter(c => c.category === k).length]))
     };
 
@@ -237,96 +237,36 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
                     </div>
 
                     <div className="admin-header-right" ref={dropdownRef} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <ThemeToggle className="navbar-theme-toggle" />
-                        <button
-                            className="btn-secondary"
-                            onClick={() => onNavigate("form")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            ⚡ File Complaint
-                        </button>
-                        <button
-                            className="btn-admin"
-                            onClick={() => onNavigate("agent-queue")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            🚨 Agent Queue
-                        </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <button
                             className="btn-secondary"
                             onClick={() => onNavigate("landing")}
                             style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                         >
-                            🏠 Landing
+                            Home
                         </button>
-                        <motion.button
-                            className="admin-profile-btn"
-                            whileHover={{ scale: 1.05 }}
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        <button
+                            className="btn-secondary"
+                            onClick={() => onNavigate("form")}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                         >
-                            <div className="admin-avatar">
-                                {user?.profile_image ? (
-                                    <img src={user.profile_image} alt={user.full_name} />
-                                ) : (
-                                    <div className="admin-avatar-placeholder">
-                                        {user?.full_name?.charAt(0).toUpperCase() || "A"}
-                                    </div>
-                                )}
-                            </div>
-                            <span className="admin-name">{user?.full_name || "Admin"}</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="6 9 12 15 18 9" />
-                            </svg>
-                        </motion.button>
-
-                        <AnimatePresence>
-                            {isMenuOpen && (
-                                <motion.div
-                                    className="admin-dropdown"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                >
-                                    <button onClick={() => { onNavigate("profile"); setIsMenuOpen(false); }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                            <circle cx="12" cy="7" r="4" />
-                                        </svg>
-                                        My Profile
-                                    </button>
-                                    <button onClick={() => { onNavigate("login-history"); setIsMenuOpen(false); }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                                        </svg>
-                                        Login History
-                                    </button>
-                                    <button onClick={() => { onNavigate("agent-queue"); setIsMenuOpen(false); }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                            <circle cx="9" cy="7" r="4" />
-                                            <path d="M16 11l2 2 4-4" />
-                                        </svg>
-                                        Agent Queue
-                                    </button>
-                                    <button onClick={() => { onNavigate("agent-resolutions"); setIsMenuOpen(false); }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                            <polyline points="22 4 12 14.01 9 11.01" />
-                                        </svg>
-                                        Agent Resolutions
-                                    </button>
-                                    <div className="admin-dropdown-divider" />
-                                    <button className="admin-logout-btn" onClick={onLogout}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                            <polyline points="16 17 21 12 16 7" />
-                                            <line x1="21" y1="12" x2="9" y2="12" />
-                                        </svg>
-                                        Logout
-                                    </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                            File Complaint
+                        </button>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => onNavigate("agent-queue")}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                        >
+                            Agent Queue
+                        </button>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => onNavigate("agent-resolutions")}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                        >
+                            Resolution Log
+                        </button>
+                    </div>
                     </div>
                 </div>
             </motion.header>
@@ -443,9 +383,10 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
 
                             <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
                                 <option value="All">All Priorities</option>
-                                <option value="High">High</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Low">Low</option>
+                                <option value="CRITICAL">Critical</option>
+                                <option value="HIGH">High</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="LOW">Low</option>
                             </select>
 
                             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
@@ -779,10 +720,6 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
                                         <div className="admin-modal-field">
                                             <label>Sentiment</label>
                                             <p>{selectedComplaint.sentiment || "N/A"}</p>
-                                        </div>
-                                        <div className="admin-modal-field">
-                                            <label>Prediction</label>
-                                            <p>{selectedComplaint.satisfaction_prediction || "N/A"}</p>
                                         </div>
                                         <div className="admin-modal-field">
                                             <label>Escalation Risk</label>

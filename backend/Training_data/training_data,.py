@@ -146,7 +146,7 @@ CATEGORY_KEYWORDS = {
     "Security": ["fraud", "hack", "security", "breach", "account", "suspicious", "scam"]
 }
 
-# Few-shot examples for Gemini prompts
+# Few-shot examples for LLM prompts
 CLASSIFICATION_EXAMPLES = """
 Examples:
 - "My payment didn't go through" → Billing

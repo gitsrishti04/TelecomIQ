@@ -7,7 +7,6 @@ export default function ComplaintForm({ onResult, user }) {
   const [formData, setFormData] = useState({
     name: user?.full_name || "",
     email: user?.email || "",
-    category: "Network Connectivity",
     subject: "",
     description: ""
   });
@@ -18,20 +17,6 @@ export default function ComplaintForm({ onResult, user }) {
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [ticketId, setTicketId] = useState("");
-
-  const categories = [
-    "Network Connectivity",
-    "Broadband Performance",
-    "Call Drops",
-    "Service Outage",
-    "Billing Dispute",
-    "Data / Usage Issue",
-    "Installation",
-    "Equipment / Router",
-    "Service Request",
-    "Cancellation",
-    "Customer Service"
-  ];
 
   const presets = [
     {
@@ -51,13 +36,24 @@ export default function ComplaintForm({ onResult, user }) {
       cat: "Billing Dispute",
       sub: "Double deduction on monthly fiber broadband bill",
       desc: "Charged twice ₹1,499 on my credit card for the current billing cycle. Unauthorized VAS fee of ₹299 also added to invoice."
+    },
+    {
+      title: "Call Drops",
+      cat: "Call Drops",
+      sub: "Calls dropping every few minutes in residential area",
+      desc: "Every voice call drops within 2-3 minutes of connecting. This has been happening for the past 4 days in my area. VoLTE is enabled but the issue persists."
+    },
+    {
+      title: "Service Outage",
+      cat: "Service Outage",
+      sub: "Complete network outage in entire building since morning",
+      desc: "No mobile signal or internet across our entire apartment complex since 8 AM today. Multiple residents are affected. This is impacting work-from-home connectivity urgently."
     }
   ];
 
   const applyPreset = (p) => {
     setFormData(prev => ({
       ...prev,
-      category: p.cat,
       subject: p.sub,
       description: p.desc
     }));
@@ -86,11 +82,13 @@ export default function ComplaintForm({ onResult, user }) {
     setShowReview(false);
 
     setSteps([
-      { name: "Telecom ML Classification & Confidence Evaluation...", status: "active" },
-      { name: "Sentiment & Polarity Emotion Analyzer...", status: "waiting" },
-      { name: "Multi-Factor Severity & Escalation Risk Scoring...", status: "waiting" },
-      { name: "RAG Vector Semantic Search Over Historical Tickets...", status: "waiting" },
-      { name: "Grounding Resolution Recommendations & SLA Timeline...", status: "waiting" }
+      { name: "Input Validation — checking complaint sufficiency...", status: "active" },
+      { name: "ML Classification — TF-IDF + Logistic Regression...", status: "waiting" },
+      { name: "Sentiment Analysis — VADER polarity scoring...", status: "waiting" },
+      { name: "Priority & Escalation Risk — multi-factor scoring...", status: "waiting" },
+      { name: "Vector Search — cosine similarity over 2,200+ tickets...", status: "waiting" },
+      { name: "RAG Knowledge Base — telecom SOP retrieval...", status: "waiting" },
+      { name: "GenAI Triage — resolution & ticket summary generation...", status: "waiting" }
     ]);
 
     try {
@@ -101,25 +99,26 @@ export default function ComplaintForm({ onResult, user }) {
         ));
       };
 
-      setTimeout(() => updateStep(0), 400);
-      setTimeout(() => updateStep(1), 900);
-      setTimeout(() => updateStep(2), 1500);
+      setTimeout(() => updateStep(0), 300);
+      setTimeout(() => updateStep(1), 700);
+      setTimeout(() => updateStep(2), 1100);
+      setTimeout(() => updateStep(3), 1500);
 
       const res = await submitComplaint(formData.name, formData.email, formData.subject, formData.description);
 
-      updateStep(3);
       updateStep(4);
+      updateStep(5);
+      updateStep(6);
 
       setTicketId(res.ticket_id);
       if (typeof onResult === "function") onResult(res);
       setShowReview(true);
 
-      showNotification("success", "✅ Complaint Ingested!", `Ticket #${res.ticket_id} logged into TelecomIQ engine.`, "📶");
+      showNotification("success", "Complaint Ingested", `Ticket #${res.ticket_id} logged into TelecomIQ engine.`);
 
       setFormData({
         name: user?.full_name || "",
         email: user?.email || "",
-        category: "Network Connectivity",
         subject: "",
         description: ""
       });
@@ -132,18 +131,18 @@ export default function ComplaintForm({ onResult, user }) {
 
   const handleReview = async () => {
     if (rating === 0) {
-      showNotification("error", "Rating Required", "Please select a star rating", "⚠️");
+      showNotification("error", "Rating Required", "Please select a star rating");
       return;
     }
     try {
       await submitReview(ticketId, rating, feedback);
-      showNotification("success", "Feedback Recorded", "Thank you for evaluating TelecomIQ recommendations!", "⭐");
+      showNotification("success", "Feedback Recorded", "Thank you for evaluating TelecomIQ recommendations!");
       setShowReview(false);
       setRating(0);
       setFeedback("");
     } catch (e) {
       console.error(e);
-      showNotification("error", "Error", "Failed to submit rating.", "❌");
+      showNotification("error", "Error", "Failed to submit rating.");
     }
   };
 
@@ -154,14 +153,13 @@ export default function ComplaintForm({ onResult, user }) {
           <div className="processing-card">
             <div className="processor-header">
               <span className="live-badge">TELECOMIQ ENGINE</span>
-              <div className="ai-brain-pulse">📡</div>
             </div>
             <h3>Analyzing Telecom Incident...</h3>
             <div className="steps-list">
               {steps.map((s, i) => (
                 <div key={i} className={`step-row ${s.status}`}>
                   <div className="step-indicator">
-                    {s.status === 'done' ? '✅' : (s.status === 'active' ? <div className="spinner-small"></div> : '○')}
+                    {s.status === 'done' ? '✓' : (s.status === 'active' ? <div className="spinner-small"></div> : '○')}
                   </div>
                   <div className="step-text">{s.name}</div>
                 </div>
@@ -172,8 +170,8 @@ export default function ComplaintForm({ onResult, user }) {
       )}
 
       <div className="form-header">
-        <h2>📶 Telecom Complaint Intelligence Portal</h2>
-        <p>Submit network, broadband, billing or operational issues for automated AI resolution.</p>
+        <h2>Telecom Complaint Intelligence Portal</h2>
+        <p>Describe your issue below. The AI pipeline will automatically classify the category, detect sentiment, score escalation risk, and generate a resolution.</p>
       </div>
 
       {/* Quick Telecom Preset Chips */}
@@ -188,13 +186,13 @@ export default function ComplaintForm({ onResult, user }) {
               padding: "0.35rem 0.75rem",
               fontSize: "0.8rem",
               borderRadius: "20px",
-              background: "rgba(59, 130, 246, 0.15)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
+              background: "rgba(59, 130, 246, 0.1)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
               color: "inherit",
               cursor: "pointer"
             }}
           >
-            ⚡ {p.title}
+            {p.title}
           </button>
         ))}
       </div>
@@ -212,13 +210,6 @@ export default function ComplaintForm({ onResult, user }) {
         </div>
 
         <div className="form-group">
-          <label>Telecom Domain Category *</label>
-          <select name="category" value={formData.category} onChange={handleChange} className="form-select" disabled={loading}>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-
-        <div className="form-group">
           <label>Complaint Subject *</label>
           <input type="text" name="subject" value={formData.subject} onChange={handleChange} className="form-input" placeholder="e.g. Fiber broadband disconnect every 30 mins" disabled={loading} required />
         </div>
@@ -228,16 +219,24 @@ export default function ComplaintForm({ onResult, user }) {
           <textarea name="description" value={formData.description} onChange={handleChange} className="form-textarea" placeholder="Describe network symptoms, locations, router light statuses, or billing amounts..." rows="5" disabled={loading} required />
         </div>
 
-        {error && <div className="error-msg">{error}</div>}
-
-        <button type="submit" className="launch-btn" disabled={loading}>
-          {loading ? "Executing Telecom Pipeline..." : "📡 Ingest & Analyze Complaint"}
+        <button type="submit" className="launch-btn btn-submit-complaint" disabled={loading}>
+          {loading ? (
+            <span>Executing Telecom Pipeline...</span>
+          ) : (
+            <>
+              <span>Ingest &amp; Analyze Complaint</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </>
+          )}
         </button>
       </form>
 
       {showReview && (
         <div className="review-block">
-          <h3>⭐ Rate TelecomIQ AI Resolution</h3>
+          <h3>Rate TelecomIQ AI Resolution</h3>
           <p>Rate the recommendation accuracy for ticket <strong>#{ticketId}</strong></p>
           <div className="star-rating">
             {[1, 2, 3, 4, 5].map(s => (

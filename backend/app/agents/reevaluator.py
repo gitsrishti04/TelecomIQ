@@ -1,4 +1,4 @@
-from app.agents.gemini_client import async_ask_gemini
+from app.agents.groq_client import async_ask_ai
 
 async def reevaluate_response(subject: str, description: str, final_response: str) -> dict:
     """
@@ -31,7 +31,7 @@ async def reevaluate_response(subject: str, description: str, final_response: st
     }}
     """
     try:
-        result = await async_ask_gemini(critic_prompt)
+        result = await async_ask_ai(critic_prompt)
         # Parse JSON from AI response
         import json
         import re

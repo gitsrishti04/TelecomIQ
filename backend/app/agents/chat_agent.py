@@ -1,4 +1,4 @@
-from app.agents.gemini_client import async_ask_gemini
+from app.agents.groq_client import async_ask_ai as async_ask_groq
 from app.services.rag_engine import rag_engine
 from app.agents.orchestrator import run_agent_pipeline
 from app.agents.language_detector import detect_language, get_language_instruction, get_language_example
@@ -165,12 +165,12 @@ async def handle_chat_message(message: str) -> dict:
             try:
                 # Using short timeout for intent
                 intent_prompt = f"Categorize as ONE word: COMPLAINT or QUESTION. Message: {clean_msg}"
-                intent_res = await asyncio.wait_for(async_ask_gemini(intent_prompt), timeout=3.0)
+                intent_res = await asyncio.wait_for(async_ask_groq(intent_prompt), timeout=3.0)
                 intent = intent_res.upper()
             except:
                 intent = "QUESTION"
 
-    # 🚀 TIER 4: AI PROCESSING (Language-Aware & Versatile)
+    # 🚀 TIER 4: AI PROCESSING (Language-Aware & Versatile via Groq)
     if "QUESTION" in intent:
         # 🔍 TIER 3.5: RAG RETRIEVAL (Company Policies)
         policy_context = rag_engine.retrieve(clean_msg)
@@ -189,7 +189,7 @@ User Message: {clean_msg}
 Response ({user_language.upper()} bullets only):"""
         try:
             print(f"🌐 Master AI Processing - Language: {user_language}")
-            raw_answer = await asyncio.wait_for(async_ask_gemini(answer_prompt), timeout=8.0)
+            raw_answer = await asyncio.wait_for(async_ask_groq(answer_prompt), timeout=8.0)
             import re
             # Strip think tags, reasoning logs, and prompt-engineering leaks
             cleaned_answer = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL | re.IGNORECASE)

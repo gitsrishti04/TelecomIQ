@@ -1,4 +1,4 @@
-from app.agents.gemini_client import async_ask_gemini
+from app.agents.groq_client import async_ask_ai
 
 async def predict_satisfaction(response: str, priority: str, category: str) -> str:
     if not response or not response.strip():
@@ -25,7 +25,7 @@ Baseline Expectation: {layer1_prediction}
 
 Return ONE word only: High, Medium, or Low"""
     try:
-        result = await async_ask_gemini(prompt)
+        result = await async_ask_ai(prompt)
         allowed = {"High", "Medium", "Low"}
         filtered = result.strip().split('\n')[0].strip()
         return filtered if filtered in allowed else layer1_prediction
