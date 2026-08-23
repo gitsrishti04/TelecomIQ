@@ -1,12 +1,10 @@
 import os
 import sys
 from dotenv import load_dotenv
-import google.generativeai as genai
+from app.agents.groq_client import async_ask_ai
 from app.agents.language_detector import get_language_instruction, get_language_example
 
 load_dotenv()
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Import LOCAL LLM (unlimited usage)
 try:
@@ -15,26 +13,6 @@ try:
 except ImportError:
     LOCAL_LLM_AVAILABLE = False
 
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    SUPPORTED_MODELS = [
-        "gemini-2.0-flash",
-        "gemini-exp-1206",
-        "gemini-2.0-flash-lite",
-        "gemini-flash-latest",
-        "gemini-pro-latest"
-    ]
-    def initialize_best_model():
-        for m_name in SUPPORTED_MODELS:
-            try:
-                return genai.GenerativeModel(m_name)
-            except:
-                continue
-        return genai.GenerativeModel("gemini-2.0-flash")
-    model = initialize_best_model()
-else:
-    model = None
-
 # Import training data
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Training_data'))
 try:
@@ -42,7 +20,7 @@ try:
 except ImportError:
     RESPONSE_TEMPLATES = {}
 
-# Category-specific professional fallback responses (multilingual) - CONCISE VERSION
+# Category-specific professional fallback responses (multilingual)
 CATEGORY_RESPONSES = {
     "Billing": {
         'english': "Thank you for contacting us about your billing concern. Our billing team will review your account and reach out within 24-48 hours with a resolution.",
@@ -100,16 +78,14 @@ async def generate_response(category: str, text: str, user_language: str = None)
     
     # Get language-specific instruction
     language_instruction = get_language_instruction(user_language)
-    language_example = get_language_example(user_language, 'complaint_received')
     
     # HINGLISH-SPECIFIC ENFORCEMENT
     if user_language == 'hinglish':
         hinglish_words = "hai, hain, aapka, aapke, aapki, hume, humne, humari, mera, meri, mere, kya, kaise, ke, liye, se, ko, ka, ki, mein, par, issue, problem, team, maafi, sachme, immediately, escalate, kar, diya, denge, karenge, milega, hoga"
         language_instruction = f"MANDATORY: You MUST respond in Hinglish (Hindi words in Roman/English script). Use these words: {hinglish_words}. DO NOT use pure English."
     
-    # Layer 1: Try AI (Groq/Gemini - Best quality, contextual)
-    if model is not None:
-        prompt = f"""You are an empathetic customer support specialist responding to a complaint.
+    # Layer 1: Groq AI (Ultra fast, contextual)
+    prompt = f"""You are an empathetic customer support specialist responding to a complaint.
 
 COMPLAINT: "{text}"
 CATEGORY: {category}
@@ -121,20 +97,6 @@ DETECTED LANGUAGE: {user_language.upper()}
 
 You MUST respond in {user_language.upper()} language ONLY. Match the user's language pattern EXACTLY.
 
-LANGUAGE EXAMPLES:
-
-✅ ENGLISH (if user wrote in English):
-User: "My order hasn't arrived yet"
-You: "We sincerely apologize for the delivery delay. Our logistics team is tracking your order and will prioritize delivery. You'll receive an update within 12 hours."
-
-✅ HINGLISH (if user wrote in Hinglish/Roman Hindi):
-User: "Mera order abhi tak nahi aaya"
-You: "Delivery delay ke liye hume sachme maafi hai. Humari logistics team aapka order track kar rahi hai aur priority delivery ensure karegi. 12 hours mein update mil jayega."
-
-✅ HINDI (if user wrote in Devanagari):
-User: "मेरा ऑर्डर अभी तक नहीं आया"
-You: "डिलीवरी में देरी के लिए हमें सचमुच खेद है। हमारी टीम आपके ऑर्डर को ट्रैक कर रही है। 12 घंटों में अपडेट मिलेगा।"
-
 INSTRUCTIONS:
 1. Write ONLY in {user_language.upper()} language - NO mixing unless user mixed
 2. Be SPECIFIC to this exact complaint (not generic)
@@ -143,12 +105,12 @@ INSTRUCTIONS:
 5. Mention next steps briefly
 
 NOW WRITE YOUR RESPONSE (in {user_language.upper()} ONLY):"""
-        try:
-            response = await model.generate_content_async(prompt)
-            if response and response.text:
-                return response.text.strip()
-        except Exception as e:
-            print(f"Gemini generation error: {e}")
+    try:
+        response = await async_ask_ai(prompt)
+        if response and response.strip():
+            return response.strip()
+    except Exception as e:
+        print(f"Groq responder error: {e}")
     
     # Layer 2: Try Local LLM (No API quota, unlimited usage)
     if LOCAL_LLM_AVAILABLE:
@@ -170,4 +132,3 @@ NOW WRITE YOUR RESPONSE (in {user_language.upper()} ONLY):"""
     # Layer 4: Category-specific professional fallback (Always works) - Language-aware
     category_fallbacks = CATEGORY_RESPONSES.get(category, CATEGORY_RESPONSES["Other"])
     return category_fallbacks.get(user_language, category_fallbacks.get('english', category_fallbacks['english']))
-

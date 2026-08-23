@@ -1,6 +1,6 @@
 import sys
 import os
-from app.agents.gemini_client import async_ask_gemini
+from app.agents.groq_client import async_ask_ai
 from app.agents.language_detector import get_language_instruction
 
 # Import LOCAL LLM
@@ -87,9 +87,9 @@ Solution: "We sincerely apologize for this issue. Here's how we'll resolve it: F
 
 NOW ANALYZE THE COMPLAINT AND PROVIDE AN APPROPRIATE SOLUTION:"""
     
-    # Try Gemini AI
+    # Try Groq AI
     try:
-        result = await async_ask_gemini(prompt)
+        result = await async_ask_ai(prompt)
         if result and result.strip():
             # Clean up any markdown formatting
             cleaned = result.strip()
@@ -113,7 +113,7 @@ NOW ANALYZE THE COMPLAINT AND PROVIDE AN APPROPRIATE SOLUTION:"""
             cleaned = ' '.join(cleaned_lines)
             return cleaned
     except Exception as e:
-        print(f"Gemini solution failed: {e}")
+        print(f"Groq solution failed: {e}")
     
     # Try Local LLM
     if LOCAL_LLM_AVAILABLE:

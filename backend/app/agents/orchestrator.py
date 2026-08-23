@@ -6,10 +6,10 @@ Official scope (per company use case):
   2.  Customer sentiment analysis            → sentiment_analyzer.py
   3.  Complaint prioritization               → priority.py
   4.  Escalation risk prediction             → priority.py
-  5.  Resolution recommendation              → GenAI (Groq → Gemini → SOP)
+  5.  Resolution recommendation              → GenAI (Groq → SOP)
   6.  Automatic ticket summary generation    → GenAI
   7.  BERT / DistilBERT component            → local_transformer.py (offline)
-  8.  GenAI triage assistant                 → gemini_client.py / groq_client.py
+  8.  GenAI triage assistant                 → groq_client.py
   9.  Vector DB / RAG                        → rag_engine.py + complaint_matcher.py
   10. Agentic orchestration                  → LangGraph StateGraph  ← THIS FILE
 
@@ -47,7 +47,7 @@ from app.agents.sentiment_analyzer import analyze_sentiment
 from app.agents.priority import detect_priority
 from app.agents.complaint_matcher import find_similar_complaints
 from app.services.rag_engine import rag_engine
-from app.agents.gemini_client import async_ask_ai
+from app.agents.groq_client import async_ask_ai
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -180,7 +180,7 @@ async def node_rag(state: ComplaintState) -> ComplaintState:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Node 7 — GenAI Triage Assistant  (Groq → Gemini → SOP template fallback)
+# Node 7 — GenAI Triage Assistant  (Groq → SOP template fallback)
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def node_genai_triage(state: ComplaintState) -> ComplaintState:

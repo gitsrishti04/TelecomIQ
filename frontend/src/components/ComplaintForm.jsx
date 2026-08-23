@@ -114,7 +114,7 @@ export default function ComplaintForm({ onResult, user }) {
       if (typeof onResult === "function") onResult(res);
       setShowReview(true);
 
-      showNotification("success", "✅ Complaint Ingested!", `Ticket #${res.ticket_id} logged into TelecomIQ engine.`, "📶");
+      showNotification("success", "Complaint Ingested", `Ticket #${res.ticket_id} logged into TelecomIQ engine.`);
 
       setFormData({
         name: user?.full_name || "",
@@ -131,18 +131,18 @@ export default function ComplaintForm({ onResult, user }) {
 
   const handleReview = async () => {
     if (rating === 0) {
-      showNotification("error", "Rating Required", "Please select a star rating", "⚠️");
+      showNotification("error", "Rating Required", "Please select a star rating");
       return;
     }
     try {
       await submitReview(ticketId, rating, feedback);
-      showNotification("success", "Feedback Recorded", "Thank you for evaluating TelecomIQ recommendations!", "⭐");
+      showNotification("success", "Feedback Recorded", "Thank you for evaluating TelecomIQ recommendations!");
       setShowReview(false);
       setRating(0);
       setFeedback("");
     } catch (e) {
       console.error(e);
-      showNotification("error", "Error", "Failed to submit rating.", "❌");
+      showNotification("error", "Error", "Failed to submit rating.");
     }
   };
 
@@ -153,14 +153,13 @@ export default function ComplaintForm({ onResult, user }) {
           <div className="processing-card">
             <div className="processor-header">
               <span className="live-badge">TELECOMIQ ENGINE</span>
-              <div className="ai-brain-pulse">📡</div>
             </div>
             <h3>Analyzing Telecom Incident...</h3>
             <div className="steps-list">
               {steps.map((s, i) => (
                 <div key={i} className={`step-row ${s.status}`}>
                   <div className="step-indicator">
-                    {s.status === 'done' ? '✅' : (s.status === 'active' ? <div className="spinner-small"></div> : '○')}
+                    {s.status === 'done' ? '✓' : (s.status === 'active' ? <div className="spinner-small"></div> : '○')}
                   </div>
                   <div className="step-text">{s.name}</div>
                 </div>
@@ -171,7 +170,7 @@ export default function ComplaintForm({ onResult, user }) {
       )}
 
       <div className="form-header">
-        <h2>📶 Telecom Complaint Intelligence Portal</h2>
+        <h2>Telecom Complaint Intelligence Portal</h2>
         <p>Describe your issue below. The AI pipeline will automatically classify the category, detect sentiment, score escalation risk, and generate a resolution.</p>
       </div>
 
@@ -187,13 +186,13 @@ export default function ComplaintForm({ onResult, user }) {
               padding: "0.35rem 0.75rem",
               fontSize: "0.8rem",
               borderRadius: "20px",
-              background: "rgba(59, 130, 246, 0.15)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
+              background: "rgba(59, 130, 246, 0.1)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
               color: "inherit",
               cursor: "pointer"
             }}
           >
-            ⚡ {p.title}
+            {p.title}
           </button>
         ))}
       </div>
@@ -220,16 +219,24 @@ export default function ComplaintForm({ onResult, user }) {
           <textarea name="description" value={formData.description} onChange={handleChange} className="form-textarea" placeholder="Describe network symptoms, locations, router light statuses, or billing amounts..." rows="5" disabled={loading} required />
         </div>
 
-        {error && <div className="error-msg">{error}</div>}
-
-        <button type="submit" className="launch-btn" disabled={loading}>
-          {loading ? "Executing Telecom Pipeline..." : "📡 Ingest & Analyze Complaint"}
+        <button type="submit" className="launch-btn btn-submit-complaint" disabled={loading}>
+          {loading ? (
+            <span>Executing Telecom Pipeline...</span>
+          ) : (
+            <>
+              <span>Ingest &amp; Analyze Complaint</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </>
+          )}
         </button>
       </form>
 
       {showReview && (
         <div className="review-block">
-          <h3>⭐ Rate TelecomIQ AI Resolution</h3>
+          <h3>Rate TelecomIQ AI Resolution</h3>
           <p>Rate the recommendation accuracy for ticket <strong>#{ticketId}</strong></p>
           <div className="star-rating">
             {[1, 2, 3, 4, 5].map(s => (

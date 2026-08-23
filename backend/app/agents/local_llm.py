@@ -1,24 +1,28 @@
 """
 Local Response Generation using GPT-2
 Completely offline, no API quotas, unlimited usage
-Fallback for when Gemini API is unavailable
+Fallback for when cloud API is unavailable
 """
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import logging
-import torch
+
+try:
+    from transformers import GPT2LMHeadModel, GPT2Tokenizer
+    import torch
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
 
 class LocalResponseGenerator:
     def __init__(self):
+        if not TRANSFORMERS_AVAILABLE:
+            self.model = None
+            self.tokenizer = None
+            return
         try:
-            # GPT-2 Medium: 345M parameters, good balance of quality and speed
-            # Why? Can generate coherent responses offline as Gemini fallback
             self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
             self.model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
             self.model.eval()
-            
-            # Set padding token
             self.tokenizer.pad_token = self.tokenizer.eos_token
-            
             logging.info("✅ Local GPT-2 Response Generator Loaded")
         except Exception as e:
             logging.error(f"Failed to load GPT-2 model: {e}")
@@ -31,13 +35,10 @@ class LocalResponseGenerator:
         Returns: Generated text response
         """
         if not self.model or not self.tokenizer or not prompt:
-            return "I apologize, but I'm unable to generate a response at this time."
+            return "Thank you for contacting us. We are reviewing your issue."
         
         try:
-            # Prepare prompt for customer service context
             formatted_prompt = f"Customer Support Agent Response:\nCustomer Issue: {prompt}\nAgent: "
-            
-            # Tokenize
             inputs = self.tokenizer.encode(
                 formatted_prompt,
                 return_tensors='pt',
@@ -45,7 +46,6 @@ class LocalResponseGenerator:
                 truncation=True
             )
             
-            # Generate
             with torch.no_grad():
                 outputs = self.model.generate(
                     inputs,
@@ -58,10 +58,7 @@ class LocalResponseGenerator:
                     no_repeat_ngram_size=3
                 )
             
-            # Decode
             response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            
-            # Extract only the agent's response
             if "Agent: " in response:
                 response = response.split("Agent: ")[-1].strip()
             

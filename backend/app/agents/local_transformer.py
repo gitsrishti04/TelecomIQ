@@ -1,16 +1,21 @@
 """
 Local Transformer-Based Sentiment Analysis
 Uses DistilBERT (lightweight BERT variant) - runs completely offline
-No API quota limits, unlimited usage
 """
-from transformers import pipeline
 import logging
+
+try:
+    from transformers import pipeline
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
 
 class LocalSentimentAnalyzer:
     def __init__(self):
+        if not TRANSFORMERS_AVAILABLE:
+            self.model = None
+            return
         try:
-            # DistilBERT is 40% smaller than BERT, 60% faster, retains 97% performance
-            # Why? Perfect balance of speed and accuracy for production
             self.model = pipeline(
                 "sentiment-analysis",
                 model="distilbert-base-uncased-finetuned-sst-2-english",
@@ -26,12 +31,11 @@ class LocalSentimentAnalyzer:
         Returns: {'label': 'POSITIVE'/'NEGATIVE', 'score': 0.0-1.0}
         """
         if not self.model or not text:
-            return {"label": "NEUTRAL", "score": 0.5}
+            return {"label": "Neutral", "score": 0.5}
         
         try:
             result = self.model(text[:512])[0]  # Truncate to model limit
             
-            # Map to our system's sentiment labels
             if result['label'] == 'POSITIVE':
                 if result['score'] > 0.9:
                     return {"label": "Positive", "score": result['score']}
@@ -39,17 +43,13 @@ class LocalSentimentAnalyzer:
                     return {"label": "Neutral", "score": result['score']}
             else:  # NEGATIVE
                 if result['score'] > 0.8:
-                    return {"label": "Angry", "score": result['score']}
-                elif result['score'] > 0.6:
                     return {"label": "Negative", "score": result['score']}
                 else:
-                    return {"label": "Neutral", "score": result['score']}
+                    return {"label": "Neutral", "score": 1 - result['score']}
+                    
         except Exception as e:
             logging.error(f"Local sentiment analysis error: {e}")
             return {"label": "Neutral", "score": 0.5}
 
 # Global instance
 local_analyzer = LocalSentimentAnalyzer()
-
-def get_local_sentiment(text: str) -> dict:
-    return local_analyzer.analyze(text)

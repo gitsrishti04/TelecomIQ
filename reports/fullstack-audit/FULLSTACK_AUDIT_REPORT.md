@@ -29,7 +29,7 @@ The audit also surfaced one **critical security theme that was not auto-fixed** 
 | Frontend | React 19, Vite (rolldown-vite 7.2.5), Framer Motion, Recharts, Three.js, jsPDF, axios |
 | Backend | FastAPI 0.104 / 0.115, Uvicorn, SQLAlchemy 2.0, Pydantic 2 |
 | Database | SQLite by default; supports Postgres, MySQL/Aiven, Turso (libsql) via `DATABASE_URL` |
-| AI | Groq (primary) → Gemini (fallback) → local scikit-learn/TextBlob fallback |
+| AI | Groq (Llama-3.3 / Qwen) → local scikit-learn/TextBlob fallback |
 | Auth | JWT (python-jose) + bcrypt (passlib, SHA-256 pre-hash), OTP email, Google OAuth |
 | Email | Brevo API (with Resend/SMTP fallbacks) |
 | Cache | Redis (optional; fails silent if unavailable) |

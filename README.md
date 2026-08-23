@@ -55,7 +55,7 @@ Customer Complaint
        ↓
   LangGraph Orchestration    (7-node StateGraph)
        ↓
-  GenAI Triage Assistant     (Groq → Gemini → SOP fallback)
+  GenAI Triage Assistant     (Groq Llama-3.3/Qwen → SOP fallback)
        ↓
   Resolution + Ticket Summary
        ↓
@@ -104,7 +104,7 @@ Customer Complaint
 | ML Classification | Scikit-learn TF-IDF + Logistic Regression |
 | Deep Learning | DistilBERT (offline fallback), BART zero-shot |
 | Sentiment Analysis | VADER + TextBlob |
-| GenAI | Groq (Qwen/Llama) → Gemini → SOP fallback |
+| GenAI | Groq (Llama-3.3 / Qwen) → SOP fallback |
 | Vector DB / RAG | TF-IDF cosine similarity over 2,200+ complaints + 11 SOP docs |
 | Backend | FastAPI + SQLAlchemy + SQLite/PostgreSQL |
 | Frontend | React 19 + Vite |

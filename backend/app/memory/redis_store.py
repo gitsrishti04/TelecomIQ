@@ -11,6 +11,9 @@ def get_redis_client():
     except Exception:
         return None
 
+# Global helper instance (fails gracefully if Redis is unavailable)
+redis_client = get_redis_client()
+
 def save_high_priority(complaint_id, data):
     try:
         client = get_redis_client()

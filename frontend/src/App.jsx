@@ -1,47 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Landing from "./components/Landing";
-import chatbotImg from "./assets/chatbot.png";
 import ComplaintForm from "./components/ComplaintForm";
 import ComplaintCard from "./components/ComplaintCard";
 import SideChatBot from "./components/SideChatBot";
 import Feedback from "./components/Feedback";
 import NotificationCenter from "./components/NotificationCenter";
-import Login from "./components/Login";
-import Signup from "./components/Signup";
-import ForgotPassword from "./components/ForgotPassword";
-import ResetPassword from "./components/ResetPassword";
-import Profile from "./components/Profile";
 import AdminDashboard from "./components/AdminDashboard";
-import AdminLoginHistory from "./components/Admin/AdminLoginHistory";
 import AgentModule from "./components/Agent/AgentModule";
 import AgentResolutions from "./components/Agent/AgentResolutions";
-import CookiePolicy from "./components/CookiePolicy";
-import ThemeToggle from "./components/ThemeToggle";
-import SignInPromptModal from "./components/SignInPromptModal";
-import { getAllComplaints, logoutUser } from "./api";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 import "./styles/Profile.css";
-// Sabse last import — sabhi buttons ke hover/ripple/glow effects hata kar
-// unhe normal button banata hai.
 import "./styles/ButtonReset.css";
 
 export default function App() {
   const [page, setPage] = useState("landing");
-  const [user, setUser] = useState({
-    name: "TelecomIQ Support Admin",
+  const [user] = useState({
+    name: "TelecomIQ Operator",
     email: "admin@telecomiq.com",
     role: "Admin"
   });
   const [result, setResult] = useState(null);
   const [showChatbot, setShowChatbot] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [complaints, setComplaints] = useState([]);
-  const [isAdminMode, setIsAdminMode] = useState(false);
 
-  // These three are declared above the effects that call them. The session
-  // timers below are registered once on mount, so they need a reference that
-  // is already defined and stays stable for the life of the component.
   const navigateTo = useCallback((newPage) => {
     setPage(newPage);
     if (newPage === "landing") {
@@ -49,197 +31,8 @@ export default function App() {
     }
   }, []);
 
-  const switchPersona = (role) => {
-    if (role === "admin") {
-      const adminUser = { name: "TelecomIQ Operations Admin", email: "admin@telecomiq.com", role: "Admin" };
-      setUser(adminUser);
-      localStorage.setItem("user", JSON.stringify(adminUser));
-      navigateTo("admin");
-    } else if (role === "agent") {
-      const agentUser = { name: "Senior Support Specialist", email: "agent@telecomiq.com", role: "Agent" };
-      setUser(agentUser);
-      localStorage.setItem("user", JSON.stringify(agentUser));
-      navigateTo("agent-queue");
-    } else {
-      const subUser = { name: "Rahul Sharma (Subscriber)", email: "user@telecomiq.com", role: "User" };
-      setUser(subUser);
-      localStorage.setItem("user", JSON.stringify(subUser));
-      navigateTo("form");
-    }
-  };
-
-  const handleLogout = useCallback(() => {
-    // Read the email from storage rather than `user` state: the session
-    // timers capture this function once, and on a mount-time expiry the
-    // state hasn't been populated yet.
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        const { email } = JSON.parse(savedUser);
-        if (email) {
-          logoutUser(email).catch(err => console.error("Logout log error:", err));
-        }
-      } catch {
-        // Malformed user in storage - nothing to log server-side
-      }
-    }
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("lastPage");
-    localStorage.removeItem("sessionTimestamp");
-    localStorage.removeItem("lastActivity");
-    setUser(null);
-    setIsAdminMode(false);
-    navigateTo("landing");
-  }, [navigateTo]);
-
-  const loadComplaints = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const data = await getAllComplaints(user.email);
-      setComplaints(data.complaints || []);
-    } catch (error) {
-      console.error("Error loading complaints:", error);
-      setComplaints([]);
-    }
-  }, [user]);
-
-  // Session timeout management
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-    // Use lastActivity for validation to support sliding session
-    const lastActivity = localStorage.getItem("lastActivity") || localStorage.getItem("sessionTimestamp");
-
-    if (savedUser && token) {
-      // Validate session on mount
-      if (lastActivity) {
-        const now = Date.now();
-        const idleTime = now - parseInt(lastActivity);
-        const SESSION_TIMEOUT = 20 * 60 * 1000; // 20 minutes
-
-        if (idleTime > SESSION_TIMEOUT) {
-          // Runs at most once on mount, and only to tear a dead session down
-          // before anything renders against it.
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          handleLogout();
-          return;
-        }
-      }
-
-      setUser(JSON.parse(savedUser));
-
-      // Update last activity timestamp on mount
-      localStorage.setItem("lastActivity", Date.now().toString());
-    }
-
-    // Auto-logout timer - check every minute
-    const checkSessionInterval = setInterval(() => {
-      const currentLastActivity = localStorage.getItem("lastActivity") || localStorage.getItem("sessionTimestamp");
-      const currentToken = localStorage.getItem("token");
-
-      if (currentToken && currentLastActivity) {
-        const now = Date.now();
-        const idleTime = now - parseInt(currentLastActivity);
-        const SESSION_TIMEOUT = 20 * 60 * 1000; // 20 minutes
-
-        if (idleTime > SESSION_TIMEOUT) {
-          handleLogout();
-          alert("आपका session 20 minutes के inactivity के बाद expire हो गया है। कृपया फिर से login करें।");
-        }
-      }
-    }, 60000); // Check every 1 minute
-
-    // Activity tracker - update last activity on user interaction
-    const updateActivity = () => {
-      const currentToken = localStorage.getItem("token");
-      if (currentToken) {
-        localStorage.setItem("lastActivity", Date.now().toString());
-      }
-    };
-
-    // Track user activity
-    window.addEventListener("mousemove", updateActivity);
-    window.addEventListener("keydown", updateActivity);
-    window.addEventListener("click", updateActivity);
-    window.addEventListener("scroll", updateActivity);
-
-    // 🚪 Auto-logout on tab close/navigation
-    const handleBeforeUnload = () => {
-      const currentToken = localStorage.getItem("token");
-
-      if (currentToken) {
-        // Set a flag in sessionStorage to detect if this is a refresh
-        const isRefreshing = sessionStorage.getItem("isRefreshing");
-
-        if (!isRefreshing) {
-          // This is a tab close or navigation away - clear session
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          localStorage.removeItem("saved_creds");
-          localStorage.removeItem("lastPage");
-          localStorage.removeItem("sessionTimestamp");
-          localStorage.removeItem("lastActivity");
-        }
-
-        // Clear the refresh flag
-        sessionStorage.removeItem("isRefreshing");
-      }
-    };
-
-    // Set refresh flag before unload
-    const handlePageHide = () => {
-      // Mark as refreshing in sessionStorage (survives page reload)
-      sessionStorage.setItem("isRefreshing", "true");
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("pagehide", handlePageHide);
-
-    // Initial page routing
-    if (window.location.pathname === "/reset-password") {
-      setPage("reset-password");
-    } else if (window.location.pathname === "/dashboard") {
-      const savedUserCheck = localStorage.getItem("user");
-      if (savedUserCheck) {
-        setPage("profile");
-      } else {
-        setPage("landing");
-      }
-    } else if (window.location.pathname === "/feedback") {
-      setPage("landing");
-      setFeedbackOpen(true);
-    }
-
-    return () => {
-      clearInterval(checkSessionInterval);
-      window.removeEventListener("mousemove", updateActivity);
-      window.removeEventListener("keydown", updateActivity);
-      window.removeEventListener("click", updateActivity);
-      window.removeEventListener("scroll", updateActivity);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("pagehide", handlePageHide);
-    };
-    // handleLogout is stable, so this still runs only once on mount
-  }, [handleLogout]);
-
-  useEffect(() => {
-    localStorage.setItem("lastPage", page);
-  }, [page]);
-
-  useEffect(() => {
-    if (user && user.email) {
-      // setComplaints only lands after the request resolves, so this isn't
-      // the synchronous cascade the rule is guarding against.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      loadComplaints();
-    }
-  }, [user, loadComplaints]);
-
   const handleComplaintSubmit = async (data) => {
     setResult(data);
-    await loadComplaints();
-    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   const renderPage = () => {
@@ -248,55 +41,8 @@ export default function App() {
         <Landing
           user={user}
           onStart={() => navigateTo("form")}
-          onAdminLogin={() => navigateTo("admin")}
-          onDashboard={() => navigateTo("admin")}
           onFeedback={() => setFeedbackOpen(true)}
           onNavigate={navigateTo}
-        />
-      );
-    }
-
-    if (page === "login") {
-      return (
-        <Login
-          onNavigate={(p) => {
-            setIsAdminMode(false);
-            navigateTo(p);
-          }}
-          onLoginSuccess={(userData) => {
-            setUser(userData);
-            setIsAdminMode(false);
-            userData.role === "Admin" ? navigateTo("admin") : navigateTo("profile");
-          }}
-          isAdminMode={isAdminMode}
-        />
-      );
-    }
-
-    if (page === "signup") {
-      return <Signup onNavigate={navigateTo} />;
-    }
-
-    if (page === "forgot-password") {
-      return <ForgotPassword onNavigate={navigateTo} />;
-    }
-
-    if (page === "reset-password") {
-      return <ResetPassword onNavigate={navigateTo} />;
-    }
-
-    if (page === "cookie-policy") {
-      return <CookiePolicy onNavigate={navigateTo} />;
-    }
-
-    if (page === "profile") {
-      return (
-        <Profile
-          user={user}
-          onNavigate={navigateTo}
-          onLogout={handleLogout}
-          complaints={complaints}
-          setComplaints={setComplaints}
         />
       );
     }
@@ -306,42 +52,7 @@ export default function App() {
         <AdminDashboard
           user={user}
           onNavigate={navigateTo}
-          onLogout={handleLogout}
         />
-      );
-    }
-
-    if (page === "login-history") {
-      return (
-        <div className="app-container">
-          <header className="profile-header">
-            <div className="header-content">
-              <div className="header-left">
-                <div className="logo" onClick={() => navigateTo("admin")}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                  </svg>
-                  <span>TelecomIQ Admin</span>
-                </div>
-              </div>
-              <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <button
-                  className="nav-btn active"
-                  onClick={() => navigateTo("admin")}
-                >
-                  Back to Dashboard
-                </button>
-                <button
-                  className="nav-btn"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </header>
-          <AdminLoginHistory />
-        </div>
       );
     }
 
@@ -350,7 +61,6 @@ export default function App() {
         <AgentModule
           user={user}
           onNavigate={navigateTo}
-          onLogout={handleLogout}
         />
       );
     }
@@ -360,53 +70,91 @@ export default function App() {
         <AgentResolutions
           user={user}
           onNavigate={navigateTo}
-          onLogout={handleLogout}
         />
       );
     }
 
+    // Default: "form" (File Complaint page)
     return (
-      <div className="app-container">
-        <header className="profile-header">
-          <div className="header-content">
-            <div className="header-left">
-              <div className="logo" onClick={() => navigateTo("landing")}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      <div className="landing-page-clean">
+        <header className="landing-header-clean">
+          <div className="header-left">
+            <div className="brand-logo" onClick={() => navigateTo("landing")}>
+              <div className="brand-logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
                 </svg>
-                <span>TelecomIQ</span>
+              </div>
+              <div className="logo-text-stack">
+                <span className="logo-main-text">TelecomIQ</span>
+                <span className="logo-sub-text">AI Intelligence</span>
               </div>
             </div>
-            <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <button
-                className="nav-btn"
-                onClick={() => navigateTo("landing")}
-              >
-                Landing
-              </button>
-              <button
-                className="nav-btn"
-                onClick={() => navigateTo("admin")}
-              >
-                Admin Dashboard
-              </button>
-              <button
-                className="nav-btn"
-                onClick={() => navigateTo("agent-queue")}
-              >
-                Agent Queue
-              </button>
-            </div>
+
+            <nav className="nav-links">
+              <button onClick={() => navigateTo("landing")}>Home</button>
+              <button onClick={() => navigateTo("agent-queue")}>Agent Queue</button>
+              <button onClick={() => navigateTo("agent-resolutions")}>Resolution Log</button>
+              <button onClick={() => navigateTo("admin")}>Admin Dashboard</button>
+            </nav>
+          </div>
+
+          <div className="header-right">
+            <button className="btn-nav-ghost" onClick={() => navigateTo("agent-queue")}>
+              Agent Queue
+            </button>
+            <button className="btn-nav-ghost" onClick={() => navigateTo("admin")}>
+              Admin
+            </button>
+            <button className="btn-nav-primary" onClick={() => navigateTo("form")}>
+              File Complaint
+            </button>
           </div>
         </header>
 
-        <main className="form-content-wrapper">
+        <main className="form-content-wrapper" style={{ padding: "40px 20px 80px", maxWidth: "1200px", margin: "0 auto" }}>
           <ComplaintForm onResult={handleComplaintSubmit} user={user} />
-          {result && (
-            <div className="result-section">
-              <ComplaintCard data={result} />
-            </div>
-          )}
+          
+          {/* Analysis Result Popup Modal */}
+          <AnimatePresence>
+            {result && (
+              <div className="analysis-popup-overlay" onClick={() => setResult(null)}>
+                <motion.div
+                  className="analysis-popup-modal"
+                  onClick={(e) => e.stopPropagation()}
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <div className="analysis-popup-header">
+                    <div className="popup-title-group">
+                      <span className="popup-badge">TELECOMIQ TRIAGE RESULT</span>
+                      <h3 className="popup-title">Incident Analysis &amp; Resolution</h3>
+                    </div>
+                    <button className="popup-close-btn" onClick={() => setResult(null)} aria-label="Close modal">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="analysis-popup-body">
+                    <ComplaintCard data={result} />
+                  </div>
+
+                  <div className="analysis-popup-footer">
+                    <button className="btn-nav-primary" onClick={() => setResult(null)}>
+                      Done / Close Analysis
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     );
@@ -416,35 +164,24 @@ export default function App() {
     <>
       <NotificationCenter />
 
-      {['login', 'signup', 'forgot-password', 'reset-password'].includes(page) && (
-        <ThemeToggle className="fixed" />
-      )}
-
       {renderPage()}
 
-      {(page === "landing" || page === "profile" || page === "form" || !["login", "signup", "forgot-password", "reset-password"].includes(page)) && (
-        <>
-          <motion.button
-            className="chatbot-toggle"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowChatbot(!showChatbot)}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <img
-              src={chatbotImg}
-              alt="Bot"
-              loading="lazy"
-              width="110"
-              height="110"
-              style={{ color: 'transparent' }}
-            />
-          </motion.button>
-          <SideChatBot open={showChatbot} onClose={() => setShowChatbot(false)} />
-        </>
-      )}
+      <motion.button
+        className="chatbot-toggle"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setShowChatbot(!showChatbot)}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        aria-label="Open AI Assistant"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span className="chatbot-badge"></span>
+      </motion.button>
+      <SideChatBot open={showChatbot} onClose={() => setShowChatbot(false)} />
 
       {feedbackOpen && (
         <Feedback onClose={() => setFeedbackOpen(false)} />

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -9,7 +9,7 @@ load_dotenv()
 
 def get_ist_time():
     """Helper to get current time in IST (UTC+5:30)"""
-    return datetime.utcnow() + timedelta(hours=5, minutes=30)
+    return datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
 
 
 # ✅ Read the database URL from environment.

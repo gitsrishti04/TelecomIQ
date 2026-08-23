@@ -92,14 +92,15 @@ body.light-theme .profile-header {
 }
 
 .nav-btn:hover {
-    background: var(--bg-hover);
-    color: var(--accent-primary);
+    background: #EFF4FF;
+    border-color: rgba(27, 77, 255, 0.35);
+    color: #1B4DFF;
 }
 
 .nav-btn.active {
-    background: var(--bg-active);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+    background: #1B4DFF;
+    border-color: #1B4DFF;
+    color: #FFFFFF;
 }
 
 .header-right {

@@ -1,16 +1,21 @@
 """
 Zero-Shot Classification using Facebook's BART
 Completely local, no API calls, unlimited usage
-Perfect for categorizing complaints without training data
 """
-from transformers import pipeline
 import logging
+
+try:
+    from transformers import pipeline
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
 
 class LocalZeroShotClassifier:
     def __init__(self):
+        if not TRANSFORMERS_AVAILABLE:
+            self.classifier = None
+            return
         try:
-            # Facebook's BART-large-mnli: State-of-the-art zero-shot classification
-            # Why? Can classify into ANY category without training
             self.classifier = pipeline(
                 "zero-shot-classification",
                 model="facebook/bart-large-mnli",
@@ -38,7 +43,8 @@ class LocalZeroShotClassifier:
             
             return {
                 "label": result['labels'][0],
-                "score": result['scores'][0]
+                "score": round(result['scores'][0], 4),
+                "all_scores": dict(zip(result['labels'], [round(s, 4) for s in result['scores']]))
             }
         except Exception as e:
             logging.error(f"Zero-shot classification error: {e}")
@@ -46,8 +52,3 @@ class LocalZeroShotClassifier:
 
 # Global instance
 local_classifier = LocalZeroShotClassifier()
-
-def classify_local(text: str, categories: list = None) -> dict:
-    if categories is None:
-        categories = ["Billing", "Technical", "Delivery", "Service", "Security", "Other"]
-    return local_classifier.classify(text, categories)
