@@ -1,12 +1,13 @@
 import axios from "axios";
 
 // Automatically resolve the backend URL:
-// 1. Explicit VITE_API_URL environment variable if provided
+// 1. Explicit VITE_API_URL environment variable if valid and not legacy render
 // 2. Localhost for local development
-// 3. Hosted Vercel backend in production
+// 3. Hosted Vercel backend in production (https://telecom-iq-pi.vercel.app)
 const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes("onrender.com") && !envUrl.includes("render")) {
+    return envUrl;
   }
   if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
     return "http://localhost:8000";
