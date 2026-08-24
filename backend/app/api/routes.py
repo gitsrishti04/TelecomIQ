@@ -84,19 +84,6 @@ async def handle_complaint(
         # Trigger auto-resolution pipeline in background
         background_tasks.add_task(auto_resolver.process_complaint, complaint.id)
 
-        # Send confirmation email
-        email_service.send_complaint_confirmation(data.name, data.email, {
-            "ticket_id": ticket_id,
-            "subject": data.subject,
-            "description": data.description,
-            "category": category,
-            "priority": priority,
-            "sentiment": sentiment,
-            "response": response,
-            "solution": solution,
-            "action": action,
-        })
-
         return ComplaintResponse(
             is_sufficient=result.get("is_sufficient", True),
             ticket_id=ticket_id,
