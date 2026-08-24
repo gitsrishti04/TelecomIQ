@@ -56,17 +56,12 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
         }
     };
 
-    const handleUpdateStatus = async (ticketId, currentStatus) => {
+    const handleUpdateStatus = async (ticketId, currentStatus, solution = null) => {
         try {
             const newStatus = !currentStatus;
+            const effectiveSolution = solution || adminSolution || (selectedComplaint?.ticket_id === ticketId ? selectedComplaint.solution : null) || "Issue resolved by Administrator.";
 
-            // If marking as resolved and no solution provided, show solution input
-            if (newStatus && !adminSolution.trim()) {
-                setShowSolutionInput(true);
-                return;
-            }
-
-            await updateComplaintStatus(ticketId, newStatus, adminSolution);
+            await updateComplaintStatus(ticketId, newStatus, newStatus ? effectiveSolution : null);
 
             // Refresh local state
             setComplaints(prev => prev.map(c =>
@@ -81,7 +76,7 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
             setShowSolutionInput(false);
 
             // Show success message
-            alert(newStatus ? "✅ Complaint resolved! Email sent to user." : "Complaint reopened.");
+            alert(newStatus ? "✅ Complaint marked as Resolved!" : "🔄 Complaint reopened.");
         } catch (error) {
             console.error("Error updating status:", error);
             alert("Failed to update status");
@@ -534,18 +529,40 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
                                                             {complaint.is_resolved && <div style={{ fontSize: '0.7rem', color: '#10b981' }}>Resolved At</div>}
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 18px' }}>
                                                         <motion.button
                                                             className="admin-view-btn"
-                                                            whileHover={{ scale: 1.1 }}
+                                                            whileHover={{ scale: 1.08 }}
                                                             whileTap={{ scale: 0.95 }}
                                                             onClick={() => setSelectedComplaint(complaint)}
+                                                            title="View Full Details"
                                                         >
                                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                                                 <circle cx="12" cy="12" r="3" />
                                                             </svg>
                                                         </motion.button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleUpdateStatus(complaint.ticket_id, complaint.is_resolved);
+                                                            }}
+                                                            style={{
+                                                                padding: '5px 12px',
+                                                                borderRadius: '6px',
+                                                                fontSize: '0.78rem',
+                                                                fontWeight: 700,
+                                                                cursor: 'pointer',
+                                                                background: complaint.is_resolved ? '#eff6ff' : '#ecfdf5',
+                                                                color: complaint.is_resolved ? '#1d4ed8' : '#059669',
+                                                                border: complaint.is_resolved ? '1px solid #bfdbfe' : '1px solid #a7f3d0',
+                                                                transition: 'all 0.2s ease',
+                                                                whiteSpace: 'nowrap'
+                                                            }}
+                                                            title={complaint.is_resolved ? "Click to Reopen Ticket" : "Click to Mark as Resolved"}
+                                                        >
+                                                            {complaint.is_resolved ? "Reopen" : "✓ Resolve"}
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}

@@ -546,55 +546,6 @@ export default function AgentModule({ user, onNavigate }) {
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Multi-model validation button & consensus */}
-                                    <button
-                                        onClick={handleValidate}
-                                        disabled={isValidating || !draftSolution.trim()}
-                                        style={{
-                                            padding: '10px 18px',
-                                            background: draftSolution.trim() ? '#eff6ff' : '#f1f5f9',
-                                            color: draftSolution.trim() ? '#1d4ed8' : '#94a3b8',
-                                            border: '1px solid #bfdbfe',
-                                            borderRadius: '8px',
-                                            fontWeight: 600,
-                                            fontSize: '0.88rem',
-                                            cursor: draftSolution.trim() ? 'pointer' : 'not-allowed',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}
-                                    >
-                                        {isValidating ? "Validating with Multi-Model Pipeline..." : "⚡ Validate with Multi-Model Pipeline"}
-                                    </button>
-
-                                    {validationResult && (
-                                        <div style={{ marginTop: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>Multi-Model Consensus</span>
-                                                <span style={{
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 700,
-                                                    padding: '2px 8px',
-                                                    borderRadius: '4px',
-                                                    background: validationResult.approval_status === 'approved' ? '#ecfdf5' : '#fef2f2',
-                                                    color: validationResult.approval_status === 'approved' ? '#059669' : '#dc2626'
-                                                }}>
-                                                    {validationResult.approval_status?.toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div style={{ background: '#e2e8f0', borderRadius: '4px', height: '6px', overflow: 'hidden', marginBottom: '0.5rem' }}>
-                                                <div style={{
-                                                    background: '#10b981',
-                                                    height: '100%',
-                                                    width: `${(validationResult.confidence_score || 0.85) * 100}%`
-                                                }}></div>
-                                            </div>
-                                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                                Confidence Agreement: {((validationResult.confidence_score || 0.85) * 100).toFixed(1)}% (Threshold: 85%)
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
