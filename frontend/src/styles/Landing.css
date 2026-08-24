@@ -210,6 +210,203 @@
   margin-bottom: 3.5rem;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   3-Persona Role Entry Portals (Customer, Support Agent, Admin)
+   ══════════════════════════════════════════════════════════════════════════ */
+.persona-portal-container {
+  max-width: 1180px;
+  margin: 0 auto 3.5rem;
+  text-align: center;
+}
+
+.persona-portal-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary-600);
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  padding: 5px 16px;
+  background: rgba(27, 77, 255, 0.08);
+  border-radius: 20px;
+}
+
+.persona-portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  text-align: left;
+}
+
+@media (max-width: 960px) {
+  .persona-portal-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+.persona-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.persona-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: all 0.25s ease;
+}
+
+.persona-card.customer-card::before {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.persona-card.agent-card::before {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+}
+
+.persona-card.admin-card::before {
+  background: linear-gradient(90deg, #059669, #10b981);
+}
+
+.persona-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: rgba(27, 77, 255, 0.3);
+}
+
+.persona-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.persona-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.chip-customer {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.chip-agent {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.chip-admin {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.persona-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.icon-customer {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.icon-agent {
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+}
+
+.icon-admin {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+.persona-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-title);
+  margin-bottom: 0.5rem;
+}
+
+.persona-description {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.btn-persona-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-customer {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #dbeafe;
+}
+
+.btn-customer:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.btn-agent {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #e0e7ff;
+}
+
+.btn-agent:hover {
+  background: #4338ca;
+  color: #ffffff;
+}
+
+.btn-admin {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #d1fae5;
+}
+
+.btn-admin:hover {
+  background: #047857;
+  color: #ffffff;
+}
+
 .btn-hero-primary {
   display: inline-flex;
   align-items: center;

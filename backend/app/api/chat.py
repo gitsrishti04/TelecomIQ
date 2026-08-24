@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import traceback
 from app.agents.chat_agent import handle_chat_message
-from app.memory.redis_store import save_high_priority
 
 class ChatRequest(BaseModel):
     message: str
@@ -17,18 +16,6 @@ async def chat(request: ChatRequest):
     try:
         message = request.message
         result = await handle_chat_message(message)
-
-        if (result.get("type") == "complaint" and result.get("priority") == "High"):
-            # Background tasks or separate threads would be even better for scaling, 
-            # but keeping it simple and async for now as requested.
-            save_high_priority(
-                message,
-                {
-                    "category": result.get("category"),
-                    "action": result.get("action"),
-                }
-            )
-
         return result
 
     except Exception as e:

@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Ensure backend directory is in sys.path for direct module import
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +19,6 @@ from app.db.seed import ensure_db_seeded
 from app.api.routes import router as complaint_router
 from app.api.chat import router as chat_router
 from app.routes.feedback import router as feedback_router
-from app.routes.auth import router as auth_router
 from app.routes.agent_module import router as agent_router
 
 from app.agents.classifier import get_classifier_model
@@ -103,7 +109,6 @@ async def cross_origin_isolation_headers(request: Request, call_next):
 app.include_router(complaint_router)
 app.include_router(chat_router)
 app.include_router(feedback_router)
-app.include_router(auth_router)
 app.include_router(agent_router)
 
 @app.get("/")

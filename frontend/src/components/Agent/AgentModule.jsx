@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAgentQueue, getComplaintDetail, validateSolution, sendResolution, logoutUser } from "../../api";
+import { getAgentQueue, getComplaintDetail, validateSolution, sendResolution } from "../../api";
 import ThemeToggle from "../ThemeToggle";
 import "../../styles/AgentModule.css";
 import { motion, AnimatePresence } from "framer-motion";
@@ -134,6 +134,22 @@ export default function AgentModule({ user, onNavigate }) {
         }
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        try {
+            return new Date(dateString).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch {
+            return String(dateString);
+        }
+    };
+    const formatTimestamp = formatDate;
+
     const getSentimentBadge = (sentiment) => {
         const s = (sentiment || "").toLowerCase();
         if (s === 'negative') return <span className="badge badge-negative">Negative</span>;
@@ -152,7 +168,7 @@ export default function AgentModule({ user, onNavigate }) {
             {/* Unified Clean Header */}
             <header className="landing-header-clean">
                 <div className="header-left">
-                    <div className="brand-logo" onClick={() => onNavigate("landing")}>
+                    <div className="brand-logo" onClick={() => onNavigate("gateway")}>
                         <div className="brand-logo-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -165,20 +181,11 @@ export default function AgentModule({ user, onNavigate }) {
                             <span className="logo-sub-text">Support Agent</span>
                         </div>
                     </div>
-
-                    <nav className="nav-links">
-                        <button onClick={() => onNavigate("landing")}>Home</button>
-                        <button className="active" onClick={() => onNavigate("agent-queue")}>Agent Queue</button>
-                        <button onClick={() => onNavigate("admin")}>Admin Dashboard</button>
-                    </nav>
                 </div>
 
                 <div className="header-right">
-                    <button className="btn-nav-ghost" onClick={() => onNavigate("admin")}>
-                        Dashboard
-                    </button>
-                    <button className="btn-nav-primary" onClick={() => onNavigate("form")}>
-                        File Complaint
+                    <button className="btn-nav-ghost" onClick={() => onNavigate("gateway")}>
+                        Switch Role
                     </button>
                 </div>
             </header>
@@ -196,37 +203,58 @@ export default function AgentModule({ user, onNavigate }) {
 
             <div className="agent-content">
                 <div className="agent-stats">
-                    <motion.div className="stat-glow-card stat-card-total" whileHover={{ y: -3 }}>
-                        <div className="stat-card-header">
-                            <span className="stat-label">Queue Size</span>
-                            <span className="stat-icon-badge">📋</span>
+                    <motion.div className="admin-stat-card" whileHover={{ y: -3 }}>
+                        <div className="admin-stat-icon total">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
                         </div>
-                        <span className="stat-value">{stats.total}</span>
-                        <span className="stat-footer-text">Total Ingested Tickets</span>
+                        <div className="admin-stat-info">
+                            <p className="admin-stat-label">Queue Size</p>
+                            <h3 className="admin-stat-value">{stats.total}</h3>
+                        </div>
                     </motion.div>
-                    <motion.div className="stat-glow-card stat-card-pending" whileHover={{ y: -3 }}>
-                        <div className="stat-card-header">
-                            <span className="stat-label">Pending Review</span>
-                            <span className="stat-icon-badge">⏳</span>
+
+                    <motion.div className="admin-stat-card" whileHover={{ y: -3 }}>
+                        <div className="admin-stat-icon pending">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
                         </div>
-                        <span className="stat-value">{stats.pending}</span>
-                        <span className="stat-footer-text">Awaiting Agent Action</span>
+                        <div className="admin-stat-info">
+                            <p className="admin-stat-label">Pending Review</p>
+                            <h3 className="admin-stat-value">{stats.pending}</h3>
+                        </div>
                     </motion.div>
-                    <motion.div className="stat-glow-card stat-card-critical" whileHover={{ y: -3 }}>
-                        <div className="stat-card-header">
-                            <span className="stat-label">Critical Issues</span>
-                            <span className="stat-icon-badge">🔥</span>
+
+                    <motion.div className="admin-stat-card" whileHover={{ y: -3 }}>
+                        <div className="admin-stat-icon high">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
                         </div>
-                        <span className="stat-value">{stats.critical}</span>
-                        <span className="stat-footer-text">P1 & P2 High Priority</span>
+                        <div className="admin-stat-info">
+                            <p className="admin-stat-label">Critical Issues</p>
+                            <h3 className="admin-stat-value">{stats.critical}</h3>
+                        </div>
                     </motion.div>
-                    <motion.div className="stat-glow-card stat-card-escalated" whileHover={{ y: -3 }}>
-                        <div className="stat-card-header">
-                            <span className="stat-label">Escalated Tickets</span>
-                            <span className="stat-icon-badge">⚠️</span>
+
+                    <motion.div className="admin-stat-card" whileHover={{ y: -3 }}>
+                        <div className="admin-stat-icon escalated">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
                         </div>
-                        <span className="stat-value">{stats.escalated}</span>
-                        <span className="stat-footer-text">High Escalation Risk (≥60%)</span>
+                        <div className="admin-stat-info">
+                            <p className="admin-stat-label">Escalated Risk</p>
+                            <h3 className="admin-stat-value">{stats.escalated}</h3>
+                        </div>
                     </motion.div>
                 </div>
 
@@ -320,167 +348,296 @@ export default function AgentModule({ user, onNavigate }) {
 
             <AnimatePresence>
                 {selectedComplaint && (
-                    <div className="agent-modal-overlay">
+                    <div className="admin-modal-overlay" onClick={() => setSelectedComplaint(null)}>
                         <motion.div
-                            className="agent-modal"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="admin-modal"
+                            onClick={(e) => e.stopPropagation()}
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            transition={{ duration: 0.2 }}
                         >
-                            <div className="modal-header">
-                                <div>
-                                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-                                        Ticket {selectedComplaint.ticket_id} — Deep Analysis
+                            <div className="admin-modal-header">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                                        Ticket {selectedComplaint.ticket_id || `#${selectedComplaint.id}`}
                                     </h2>
-                                    <p className="user-email">Reviewing complaint from {selectedComplaint.user_name}</p>
+                                    <span className={`admin-status ${selectedComplaint.is_resolved ? 'resolved' : 'pending'}`}>
+                                        {selectedComplaint.is_resolved ? "Resolved" : "Pending Review"}
+                                    </span>
                                 </div>
-                                <button className="btn btn-outline" onClick={() => setSelectedComplaint(null)}>Close</button>
+                                <button className="admin-modal-close" onClick={() => setSelectedComplaint(null)} aria-label="Close modal">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
                             </div>
 
-                            <div className="modal-body">
-                                <div className="analysis-grid">
-                                    <div className="analysis-panel">
-                                        <div className="panel">
-                                            <h3 className="panel-title"><span>📋</span> Complaint Details</h3>
-                                            <div className="complaint-text-box">
-                                                <strong>{selectedComplaint.subject}</strong>
-                                                <p style={{ marginTop: '0.5rem' }}>{selectedComplaint.description}</p>
-                                            </div>
-
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                <div>
-                                                    <span className="stat-label">Category</span>
-                                                    <p>{selectedComplaint.category}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="stat-label">AI Sentiment</span>
-                                                    <p>{selectedComplaint.sentiment}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="ai-hint">
-                                                <strong>🤖 AI Suggestion:</strong>
-                                                <p style={{ marginTop: '0.25rem' }}>{selectedComplaint.ai_solution}</p>
-                                            </div>
+                            <div className="admin-modal-content">
+                                {/* Section 1: Customer Information */}
+                                <div className="admin-modal-section">
+                                    <h3>Customer Information</h3>
+                                    <div className="admin-modal-grid">
+                                        <div className="admin-modal-field">
+                                            <label>Ticket ID</label>
+                                            <p>{selectedComplaint.ticket_id || `#${selectedComplaint.id}`}</p>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Customer Name</label>
+                                            <p>{selectedComplaint.name || selectedComplaint.user_name || "Subscriber"}</p>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Email Address</label>
+                                            <p>{selectedComplaint.email || selectedComplaint.user_email || "N/A"}</p>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Submission Date</label>
+                                            <p>{formatTimestamp(selectedComplaint.created_at)}</p>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="resolution-panel">
-                                        <div className="panel">
-                                            <h3 className="panel-title"><span>✍️</span> Compose Resolution</h3>
-                                            <textarea
-                                                className="solution-editor"
-                                                placeholder="Write a clear, descriptive solution summary..."
-                                                value={draftSolution}
-                                                onChange={(e) => setDraftSolution(e.target.value)}
-                                                style={{ minHeight: '120px' }}
-                                            ></textarea>
+                                {/* Section 2: AI Triage & Assessment */}
+                                <div className="admin-modal-section">
+                                    <h3>AI Triage &amp; Risk Assessment</h3>
+                                    <div className="admin-modal-grid">
+                                        <div className="admin-modal-field">
+                                            <label>Category</label>
+                                            <span className="category-tag">{selectedComplaint.category || "Network Connectivity"}</span>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Priority</label>
+                                            <span className={`priority-pill ${(selectedComplaint.priority || 'medium').toLowerCase()}`}>
+                                                {selectedComplaint.priority || "Medium"}
+                                            </span>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Sentiment</label>
+                                            <p>{selectedComplaint.sentiment || "Neutral"}</p>
+                                        </div>
+                                        <div className="admin-modal-field">
+                                            <label>Escalation Risk</label>
+                                            <span style={{
+                                                color: (selectedComplaint.escalation_risk_score >= 60 || selectedComplaint.escalation_required) ? '#ef4444' : '#10b981',
+                                                fontWeight: '700'
+                                            }}>
+                                                ⚠️ {selectedComplaint.escalation_risk_score ? `${selectedComplaint.escalation_risk_score}%` : (selectedComplaint.escalation_required ? "Required" : "Low Risk")}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                            <div className="steps-editor-section" style={{ marginTop: '1.5rem' }}>
-                                                <h4 style={{ fontSize: '0.9rem', color: 'var(--agent-text-dim)', marginBottom: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span>Actionable Steps</span>
+                                {/* Section 3: Complaint Content */}
+                                <div className="admin-modal-section">
+                                    <h3>Subject</h3>
+                                    <div className="admin-modal-text" style={{ fontWeight: '700', marginBottom: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}>
+                                        {selectedComplaint.subject || "No Subject"}
+                                    </div>
+                                    <h3>Detailed Description</h3>
+                                    <div className="admin-modal-text" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155' }}>
+                                        {selectedComplaint.description || selectedComplaint.complaint_text}
+                                    </div>
+                                </div>
+
+                                {/* Section 4: AI Grounded Suggestion */}
+                                {(selectedComplaint.ai_solution || selectedComplaint.solution) && (
+                                    <div className="admin-modal-section" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '1.25rem', borderRadius: '12px' }}>
+                                        <h3 style={{ color: '#1d4ed8', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span>🤖</span> AI Grounded Recommendation
+                                        </h3>
+                                        <p style={{ color: '#1e3a8a', fontSize: '0.92rem', lineHeight: '1.6', margin: 0 }}>
+                                            {selectedComplaint.ai_solution || selectedComplaint.solution}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Section 5: Agent Compose Resolution */}
+                                <div className="admin-modal-section">
+                                    <h3>✍️ Support Agent Resolution Plan</h3>
+                                    <textarea
+                                        className="solution-editor"
+                                        placeholder="Write a clear, descriptive technical resolution..."
+                                        value={draftSolution}
+                                        onChange={(e) => setDraftSolution(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            minHeight: '110px',
+                                            padding: '12px 14px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #cbd5e1',
+                                            fontSize: '0.92rem',
+                                            fontFamily: 'inherit',
+                                            resize: 'vertical',
+                                            marginBottom: '1rem',
+                                            outline: 'none'
+                                        }}
+                                    />
+
+                                    {/* Actionable steps */}
+                                    <div style={{ marginBottom: '1.25rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', margin: 0 }}>
+                                                Actionable Troubleshooting Steps
+                                            </h4>
+                                            <button
+                                                onClick={() => setDraftSteps([...draftSteps, ""])}
+                                                style={{
+                                                    background: '#eff6ff',
+                                                    color: '#1d4ed8',
+                                                    border: '1px solid #bfdbfe',
+                                                    borderRadius: '6px',
+                                                    padding: '4px 10px',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                + Add Step
+                                            </button>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {draftSteps.map((step, idx) => (
+                                                <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                    <span style={{ color: '#1B4DFF', fontWeight: '700', width: '20px' }}>{idx + 1}.</span>
+                                                    <input
+                                                        type="text"
+                                                        value={step}
+                                                        onChange={(e) => {
+                                                            const newSteps = [...draftSteps];
+                                                            newSteps[idx] = e.target.value;
+                                                            setDraftSteps(newSteps);
+                                                        }}
+                                                        placeholder={`Step ${idx + 1}...`}
+                                                        style={{
+                                                            flex: 1,
+                                                            background: '#ffffff',
+                                                            border: '1px solid #cbd5e1',
+                                                            borderRadius: '6px',
+                                                            padding: '8px 12px',
+                                                            fontSize: '0.88rem'
+                                                        }}
+                                                    />
                                                     <button
-                                                        onClick={() => setDraftSteps([...draftSteps, ""])}
-                                                        style={{ background: 'var(--agent-primary)', color: 'white', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.75rem', cursor: 'pointer' }}
-                                                    >+ Add Step</button>
-                                                </h4>
-
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    {draftSteps.map((step, idx) => (
-                                                        <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
-                                                            <span style={{ color: 'var(--agent-primary)', fontWeight: '700', marginTop: '8px' }}>{idx + 1}.</span>
-                                                            <textarea
-                                                                value={step}
-                                                                onChange={(e) => {
-                                                                    const newSteps = [...draftSteps];
-                                                                    newSteps[idx] = e.target.value;
-                                                                    setDraftSteps(newSteps);
-                                                                }}
-                                                                placeholder={`Step ${idx + 1}...`}
-                                                                style={{
-                                                                    flex: 1,
-                                                                    background: 'rgba(255,255,255,0.05)',
-                                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                                    borderRadius: '6px',
-                                                                    padding: '0.5rem',
-                                                                    color: 'inherit',
-                                                                    fontSize: '0.85rem',
-                                                                    resize: 'vertical',
-                                                                    minHeight: '40px'
-                                                                }}
-                                                            />
-                                                            <button
-                                                                onClick={() => setDraftSteps(draftSteps.filter((_, i) => i !== idx))}
-                                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                                                            >×</button>
-                                                        </div>
-                                                    ))}
-                                                    {draftSteps.length === 0 && (
-                                                        <p style={{ fontSize: '0.8rem', color: 'var(--agent-text-dim)', fontStyle: 'italic' }}>No steps added. Click "+ Add Step" to begin.</p>
-                                                    )}
+                                                        onClick={() => setDraftSteps(draftSteps.filter((_, i) => i !== idx))}
+                                                        style={{
+                                                            background: '#fef2f2',
+                                                            color: '#ef4444',
+                                                            border: '1px solid #fecaca',
+                                                            borderRadius: '6px',
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </button>
                                                 </div>
-                                            </div>
-
-                                            <div style={{ marginTop: '1.5rem' }}>
-                                                <button
-                                                    className="btn btn-primary"
-                                                    onClick={handleValidate}
-                                                    disabled={isValidating || !draftSolution.trim()}
-                                                    style={{ width: '100%', justifyContent: 'center' }}
-                                                >
-                                                    {isValidating ? <><div className="loader"></div> Validating Solution...</> : "Validate with Multi-Model Pipeline"}
-                                                </button>
-                                            </div>
-
-                                            {validationResult && (
-                                                <motion.div
-                                                    className="validation-results"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                >
-                                                    <div className="validation-header">
-                                                        <span className="stat-label">Groq Multi-Model Consensus</span>
-                                                        <span className={`badge ${validationResult.approval_status === 'approved' ? 'badge-positive' : 'badge-negative'}`}>
-                                                            {validationResult.approval_status.toUpperCase()}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="confidence-meter">
-                                                        <motion.div
-                                                            className="confidence-fill"
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${validationResult.confidence_score * 100}%` }}
-                                                        ></motion.div>
-                                                    </div>
-
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                                                        <span>Agreement Score: {(validationResult.confidence_score * 100).toFixed(1)}%</span>
-                                                        <span>Threshold: 85%</span>
-                                                    </div>
-
-                                                    <div className="models-grid">
-                                                        {validationResult.validation_results?.map((res, idx) => (
-                                                            <div key={idx} className={`model-card ${res.passed ? 'success' : 'fail'}`}>
-                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{res.model.split('-')[0]}</span>
-                                                                <span>{res.passed ? '✅' : '❌'}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </motion.div>
+                                            ))}
+                                            {draftSteps.length === 0 && (
+                                                <p style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>
+                                                    No manual steps added. Click "+ Add Step" if required.
+                                                </p>
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Multi-model validation button & consensus */}
+                                    <button
+                                        onClick={handleValidate}
+                                        disabled={isValidating || !draftSolution.trim()}
+                                        style={{
+                                            padding: '10px 18px',
+                                            background: draftSolution.trim() ? '#eff6ff' : '#f1f5f9',
+                                            color: draftSolution.trim() ? '#1d4ed8' : '#94a3b8',
+                                            border: '1px solid #bfdbfe',
+                                            borderRadius: '8px',
+                                            fontWeight: 600,
+                                            fontSize: '0.88rem',
+                                            cursor: draftSolution.trim() ? 'pointer' : 'not-allowed',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        {isValidating ? "Validating with Multi-Model Pipeline..." : "⚡ Validate with Multi-Model Pipeline"}
+                                    </button>
+
+                                    {validationResult && (
+                                        <div style={{ marginTop: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>Multi-Model Consensus</span>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px',
+                                                    background: validationResult.approval_status === 'approved' ? '#ecfdf5' : '#fef2f2',
+                                                    color: validationResult.approval_status === 'approved' ? '#059669' : '#dc2626'
+                                                }}>
+                                                    {validationResult.approval_status?.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div style={{ background: '#e2e8f0', borderRadius: '4px', height: '6px', overflow: 'hidden', marginBottom: '0.5rem' }}>
+                                                <div style={{
+                                                    background: '#10b981',
+                                                    height: '100%',
+                                                    width: `${(validationResult.confidence_score || 0.85) * 100}%`
+                                                }}></div>
+                                            </div>
+                                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                                Confidence Agreement: {((validationResult.confidence_score || 0.85) * 100).toFixed(1)}% (Threshold: 85%)
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="modal-footer">
-                                <button className="btn btn-outline" onClick={() => setSelectedComplaint(null)}>Discard Draft</button>
+                            {/* Modal Footer */}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: '10px',
+                                padding: '1.25rem 2rem',
+                                borderTop: '1px solid #e2e8f0',
+                                background: '#f8fafc'
+                            }}>
                                 <button
-                                    className="btn btn-success"
+                                    onClick={() => setSelectedComplaint(null)}
+                                    style={{
+                                        padding: '0.6rem 1.25rem',
+                                        background: '#ffffff',
+                                        color: '#475569',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: '8px',
+                                        fontWeight: 600,
+                                        fontSize: '0.88rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
                                     onClick={handleSend}
                                     disabled={isSending || !draftSolution.trim()}
+                                    style={{
+                                        padding: '0.6rem 1.4rem',
+                                        background: draftSolution.trim() ? '#10b981' : '#9ca3af',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontWeight: 600,
+                                        fontSize: '0.88rem',
+                                        cursor: draftSolution.trim() ? 'pointer' : 'not-allowed',
+                                        boxShadow: draftSolution.trim() ? '0 2px 8px rgba(16, 185, 129, 0.25)' : 'none'
+                                    }}
                                 >
-                                    {isSending ? <><div className="loader"></div> Delivering...</> : (validationResult?.approval_status === 'rejected' ? "Force Approve & Deliver" : "Approve & Deliver to User")}
+                                    {isSending ? "Delivering Resolution..." : "✅ Approve & Resolve Complaint"}
                                 </button>
                             </div>
                         </motion.div>

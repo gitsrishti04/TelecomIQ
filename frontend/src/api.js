@@ -78,64 +78,6 @@ export const bulkDeleteComplaints = async (ids) => {
 };
 
 
-// Auth API
-export const registerUser = async (email, fullName, password, phone, organization, profileImage) => {
-  const response = await api.post("/auth/register", {
-    email,
-    full_name: fullName,
-    password,
-    phone,
-    organization,
-    profile_image: profileImage
-  }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const requestOTP = async (email) => {
-  const response = await api.post("/auth/request-otp", { email }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const verifyOTP = async (email, otp, location = null) => {
-  const response = await api.post("/auth/verify-otp", { email, otp, location }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const loginWithPassword = async (email, password, location = null) => {
-  const response = await api.post("/auth/login-password", { email, password, location }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const forgotPassword = async (email) => {
-  const response = await api.post("/auth/forgot-password", { email }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const resetPassword = async (email, reset_token, new_password) => {
-  const response = await api.post("/auth/reset-password", { email, reset_token, new_password }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const googleAuth = async (token, name, location = null) => {
-  const response = await api.post("/auth/google", { token, name, location }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const googleVerifyOTP = async (email, otp, location = null) => {
-  const response = await api.post("/auth/google-verify-otp", { email, otp, location }, { timeout: AUTH_TIMEOUT });
-  return response.data;
-};
-
-export const updateProfile = async (email, profileData) => {
-  const response = await api.patch(`/auth/update-profile?email=${encodeURIComponent(email)}`, profileData);
-  return response.data;
-};
-
-export const logoutUser = async (email) => {
-  const response = await api.post(`/auth/logout?email=${encodeURIComponent(email)}`);
-  return response.data;
-};
-
 export const submitResolutionFeedback = async (ticketId, isActuallyResolved, userComment = "") => {
   const response = await api.post(`/complaint/${ticketId}/resolution-feedback`, {
     is_actually_resolved: isActuallyResolved,
