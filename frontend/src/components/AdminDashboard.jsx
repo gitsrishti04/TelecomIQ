@@ -237,29 +237,15 @@ export default function AdminDashboard({ user, onNavigate, onLogout }) {
                     </div>
 
                     <div className="admin-header-right" ref={dropdownRef} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <button
-                            className="btn-secondary"
-                            onClick={() => onNavigate("landing")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            Home
-                        </button>
-                        <button
-                            className="btn-secondary"
-                            onClick={() => onNavigate("form")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            File Complaint
-                        </button>
-                        <button
-                            className="btn-secondary"
-                            onClick={() => onNavigate("agent-queue")}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        >
-                            Agent Queue
-                        </button>
-                    </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <button
+                                className="btn-secondary"
+                                onClick={() => onNavigate("gateway")}
+                                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: '#eff6ff', color: '#1d4ed8', borderColor: '#dbeafe', cursor: 'pointer' }}
+                            >
+                                Switch Role
+                            </button>
+                        </div>
                     </div>
                 </div>
             </motion.header>

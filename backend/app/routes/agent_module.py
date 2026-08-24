@@ -59,39 +59,22 @@ def normalize_steps(steps: Optional[List[Any]]) -> Optional[List[str]]:
 
 def require_agent_access(user_email: str, db: Session) -> User:
     """
-    Verify that the user has agent access.
-    Automatically provisions/allows demo admin & agent emails.
+    Auto-provision user/agent record seamlessly with zero login friction.
     """
-    user = db.query(User).filter(User.email == user_email).first()
-    
-    clean_email = (user_email or "").lower()
-    is_demo_agent = "admin" in clean_email or "agent" in clean_email
+    clean_email = (user_email or "agent@telecomiq.com").strip().lower()
+    user = db.query(User).filter(User.email == clean_email).first()
     
     if not user:
-        if is_demo_agent:
-            # Auto-create user record for seamless demo operation
-            user = User(
-                email=user_email,
-                full_name=user_email.split('@')[0].capitalize(),
-                role="Admin" if "admin" in clean_email else "Agent",
-                is_agent=True,
-                is_active=True
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            return user
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-    
-    if user.role != "Admin" and not user.is_agent and not is_demo_agent:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Agent role required."
+        user = User(
+            email=clean_email,
+            full_name=clean_email.split('@')[0].capitalize(),
+            role="Admin" if "admin" in clean_email else "Agent",
+            is_agent=True,
+            is_active=True
         )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
     
     return user
 

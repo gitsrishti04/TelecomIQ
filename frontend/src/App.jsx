@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import Gateway from "./components/Gateway";
 import Landing from "./components/Landing";
 import ComplaintForm from "./components/ComplaintForm";
 import ComplaintCard from "./components/ComplaintCard";
@@ -9,11 +10,10 @@ import AdminDashboard from "./components/AdminDashboard";
 import AgentModule from "./components/Agent/AgentModule";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
-import "./styles/Profile.css";
 import "./styles/ButtonReset.css";
 
 export default function App() {
-  const [page, setPage] = useState("landing");
+  const [page, setPage] = useState("gateway");
   const [user] = useState({
     name: "TelecomIQ Operator",
     email: "admin@telecomiq.com",
@@ -25,7 +25,7 @@ export default function App() {
 
   const navigateTo = useCallback((newPage) => {
     setPage(newPage);
-    if (newPage === "landing") {
+    if (newPage === "landing" || newPage === "gateway") {
       setResult(null);
     }
   }, []);
@@ -35,6 +35,15 @@ export default function App() {
   };
 
   const renderPage = () => {
+    if (page === "gateway") {
+      return (
+        <Gateway
+          onSelectRole={(role) => navigateTo(role)}
+          onExploreLanding={() => navigateTo("landing")}
+        />
+      );
+    }
+
     if (page === "landing") {
       return (
         <Landing
@@ -69,7 +78,7 @@ export default function App() {
       <div className="landing-page-clean">
         <header className="landing-header-clean">
           <div className="header-left">
-            <div className="brand-logo" onClick={() => navigateTo("landing")}>
+            <div className="brand-logo" onClick={() => navigateTo("gateway")}>
               <div className="brand-logo-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -79,26 +88,14 @@ export default function App() {
               </div>
               <div className="logo-text-stack">
                 <span className="logo-main-text">TelecomIQ</span>
-                <span className="logo-sub-text">AI Intelligence</span>
+                <span className="logo-sub-text">Customer Portal</span>
               </div>
             </div>
-
-            <nav className="nav-links">
-              <button onClick={() => navigateTo("landing")}>Home</button>
-              <button onClick={() => navigateTo("agent-queue")}>Agent Queue</button>
-              <button onClick={() => navigateTo("admin")}>Admin Dashboard</button>
-            </nav>
           </div>
 
           <div className="header-right">
-            <button className="btn-nav-ghost" onClick={() => navigateTo("agent-queue")}>
-              Agent Queue
-            </button>
-            <button className="btn-nav-ghost" onClick={() => navigateTo("admin")}>
-              Admin
-            </button>
-            <button className="btn-nav-primary" onClick={() => navigateTo("form")}>
-              File Complaint
+            <button className="btn-nav-ghost" onClick={() => navigateTo("gateway")}>
+              Switch Role
             </button>
           </div>
         </header>
